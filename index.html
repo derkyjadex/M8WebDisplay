@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>USB Test</title>
+</head>
+<body>
+	<button id="connect">Connect</button>
+
+	<button id="left">&lt;</button>
+	<button id="right">&gt;</button>
+<script>
+
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+let device;
+
+function processRect(frame) {
+	// [x x] [y y] [w w] [h h] [r] [g] [b]
+	const x = frame[1] + frame[2] * 256;
+	const y = frame[3] + frame[4] * 256;
+	const w = frame[5] + frame[6] * 256;
+	const h = frame[7] + frame[8] * 256;
+	const r = frame[9];
+	const g = frame[10];
+	const b = frame[11];
+	console.log(`RECT ${w}x${h} @ ${x},${y} (${r.toString(16)} ${g.toString(16)} ${b.toString(16)})`);
+}
+
+function processText(frame) {
+	// [c] [x x] [y y] [r] [g] [b]
+	const c = String.fromCharCode(frame[1]);
+	const x = frame[2] + frame[3] * 256;
+	const y = frame[4] + frame[5] * 256;
+	const r = frame[6];
+	const g = frame[7];
+	const b = frame[8];
+	console.log(`'${c}' @ ${x},${y} (${r.toString(16)} ${g.toString(16)} ${b.toString(16)})`);
+}
+
+function processFrame(frame) {
+	const type = frame[0];
+	switch (type) {
+		case 0xfe:
+			if (frame.length >= 12) {
+				processRect(frame);
+			} else {
+				console.log('Bad RECT frame');
+			}
+			break;
+
+		case 0xfd:
+			if (frame.length >= 9) {
+				processText(frame);
+			} else {
+				console.log('Bad TEXT frame');
+			}
+			break;
+
+		case 0xfc: // wave
+		case 0xfb: // joypad
+			break;
+
+		default:
+			console.log('BAD FRAME');
+	}
+}
+
+let inState = 'normal';
+const inFrame = [];
+
+function processIn(dataView) {
+	for (let i = 0; i < dataView.byteLength; i++) {
+		const b = dataView.getUint8(i);
+
+		switch (inState) {
+			case 'normal':
+				switch (b) {
+					case 0xc0:
+						processFrame(inFrame);
+						inFrame.length = 0;
+						break;
+
+					case 0xdb:
+						inState = 'escape';
+						break;
+
+					default:
+						inFrame.push(b);
+						break;
+				}
+				break;
+
+			case 'escape':
+				switch (b) {
+					case 0xdc:
+						inFrame.push(0xc0);
+						inState = 'normal';
+						break;
+
+					case 0xdd:
+						inFrame.push(0xdb);
+						inState = 'normal';
+						break;
+
+					default:
+						inState = 'error';
+						console.log('Unexpected SLIP sequence');
+						break;
+				}
+				break;
+
+			case 'error':
+				switch (b) {
+					case 0xc0:
+						inState = 'normal';
+						inFrame.length = 0;
+						console.log('SLIP recovered');
+						break;
+
+					default:
+						break;
+				}
+		}
+	}
+}
+
+function readIn() {
+	return device.transferIn(3, 512)
+		.then(result => {
+			if (result.status !== 'ok') {
+				console.log(result);
+			} else {
+				processIn(result.data);
+			}
+
+			return readIn();
+		});
+}
+
+function disconnect(error) {
+	device = null;
+	console.error(error);
+}
+
+document
+	.getElementById('connect')
+	.addEventListener('click', () => {
+		if (device)
+			return;
+
+		navigator.usb
+			.requestDevice({
+				filters: [{
+					vendorId: 0x16c0,
+					productId: 0x048a
+				}]
+			})
+			.then(selectedDevice => {
+				device = selectedDevice;
+				inState = 'normal';
+				inFrame.length = 0;
+				return device.open();
+			})
+			.then(() => device.selectConfiguration(1))
+			.then(() => device.claimInterface(1))
+			.then(() => device.controlTransferOut({
+				requestType: 'class',
+				recipient: 'interface',
+				request: 0x20,
+				index: 0x01,
+				value: 0x03
+			}))
+			.then(() => device.controlTransferOut({
+				requestType: 'class',
+				recipient: 'interface',
+				request: 0x22,
+				index: 0x01,
+				value: 0x01
+			}))
+			.then(() => device.transferOut(3, new Uint8Array([0x62, 0x27, 0x44, 0x27,  0x00])))
+			.then(() => wait(50))
+			.then(() => device.transferOut(3, new Uint8Array([0x62, 0x27, 0x45, 0x27,  0x00])))
+			.then(() => device.transferOut(3, new Uint8Array([0x62, 0x27, 0x52, 0x27,  0x00])))
+			.then(() => readIn())
+			.catch(disconnect);
+	});
+
+document
+	.getElementById('left')
+	.addEventListener('click', () => {
+		if (!device)
+			return;
+
+	device
+		.transferOut(3, new Uint8Array([0x43, 0x01]))
+		.then(() => wait(50))
+		.then(() => transferOut(3, new Uint8Array([0x43, 0x00])))
+		.catch(disconnect);
+	});
+
+</script>
+
+</body>
+</html>
