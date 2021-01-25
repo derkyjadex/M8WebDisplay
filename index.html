@@ -27,7 +27,7 @@
 	</style>
 </head>
 <body>
-	<button id="connect">Connect</button>
+	<button id="connect" autofocus>Connect</button>
 
 	<div>
 		<canvas id="canvas" width="320" height="240"></canvas>
@@ -231,59 +231,57 @@ function disconnect(error) {
 	console.error(error);
 }
 
-document
-	.getElementById('connect')
-	.addEventListener('click', () => {
-		if (device)
-			return;
+function connect() {
+	if (device)
+		return;
 
-		navigator.usb.getDevices()
-			.then(devices => {
-				device = devices.filter(d =>
-					d.vendorId === 0x16c0 &&
-					d.productId === 0x048a)[0];
+	navigator.usb.getDevices()
+		.then(devices => {
+			device = devices.filter(d =>
+				d.vendorId === 0x16c0 &&
+				d.productId === 0x048a)[0];
 
-				if (device) {
-					inState = 'normal';
-					inFrame.length = 0;
-					return device;
+			if (device) {
+				inState = 'normal';
+				inFrame.length = 0;
+				return device;
 
-				} else {
-					return navigator.usb.requestDevice({
-						filters: [{
-							vendorId: 0x16c0,
-							productId: 0x048a
-						}]
-					});
-				}
-			})
-			.then(selectedDevice => {
-				device = selectedDevice;
-				return device.open();
-			})
-			.then(() => device.selectConfiguration(1))
-			.then(() => device.claimInterface(1))
-			.then(() => device.controlTransferOut(
-				{
-					requestType: 'class',
-					recipient: 'interface',
-					request: 0x22,
-					value: 0x03,
-					index: 0x01
-				}))
-			.then(() => device.controlTransferOut(
-				{
-					requestType: 'class',
-					recipient: 'interface',
-					request: 0x20,
-					value: 0x00,
-					index: 0x01
-				},
-				new Uint8Array([0x80, 0x25, 0x00, 0x00, 0x00, 0x00, 0x08])))
-			.then(() => reset())
-			.then(() => readIn())
-			.catch(disconnect);
-	});
+			} else {
+				return navigator.usb.requestDevice({
+					filters: [{
+						vendorId: 0x16c0,
+						productId: 0x048a
+					}]
+				});
+			}
+		})
+		.then(selectedDevice => {
+			device = selectedDevice;
+			return device.open();
+		})
+		.then(() => device.selectConfiguration(1))
+		.then(() => device.claimInterface(1))
+		.then(() => device.controlTransferOut(
+			{
+				requestType: 'class',
+				recipient: 'interface',
+				request: 0x22,
+				value: 0x03,
+				index: 0x01
+			}))
+		.then(() => device.controlTransferOut(
+			{
+				requestType: 'class',
+				recipient: 'interface',
+				request: 0x20,
+				value: 0x00,
+				index: 0x01
+			},
+			new Uint8Array([0x80, 0x25, 0x00, 0x00, 0x00, 0x00, 0x08])))
+		.then(() => reset())
+		.then(() => readIn())
+		.catch(disconnect);
+}
 
 let keyState = 0;
 const keyMap = {
@@ -296,6 +294,13 @@ const keyMap = {
 	KeyZ: 1,
 	KeyX: 0
 };
+
+document
+	.getElementById('connect')
+	.addEventListener('click', () => {
+		startAudio();
+		connect();
+	});
 
 function sendKeyState() {
 	if (!device)
@@ -345,6 +350,50 @@ function deviceInfo() {
 			epPacketSize: ep.packetSize
 		})));
 	console.table(info);
+}
+
+let audio;
+
+function startAudio() {
+	if (audio) {
+		return audio
+			.close()
+			.then(() => {
+				audio = null;
+				return startAudio();
+			});
+	}
+
+	audio = new AudioContext();
+
+	navigator.mediaDevices
+		.getUserMedia({ audio: true })
+		.then(stream => navigator.mediaDevices
+			.enumerateDevices())
+		.then(devices => {
+			const device = devices.filter(d =>
+				d.kind === 'audioinput' &&
+				/M8/.test(d.label) &&
+				d.deviceId !== 'default' &&
+				d.deviceId !== 'communications')[0];
+
+			if (!device)
+				throw new Error('M8 not found');
+
+			return device.deviceId;
+		})
+		.then(deviceId => navigator.mediaDevices
+			.getUserMedia({ audio: {
+				deviceId: { exact: deviceId },
+				autoGainControl: false,
+				echoCancellation: false,
+				noiseSuppression: false
+			} }))
+		.then(stream => {
+			const source = audio.createMediaStreamSource(stream);
+			source.connect(audio.destination);
+		})
+		.catch(err => console.log(err));
 }
 </script>
 
