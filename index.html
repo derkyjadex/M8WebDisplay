@@ -82,10 +82,12 @@ function processRect(frame) {
 	const g = frame[10];
 	const b = frame[11];
 
-	// console.log(`RECT ${w}x${h} @ ${x},${y} (${r.toString(16)} ${g.toString(16)} ${b.toString(16)})`);
-
 	ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
 	ctx.fillRect(x, y, w, h);
+
+    if (x === 0 && y === 0 && w === 320 && h === 240) {
+        document.body.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+    }
 }
 
 let textUpdates = {};
@@ -117,11 +119,6 @@ function processText(frame) {
 	const g = frame[7];
 	const b = frame[8];
 
-	// console.log(`'${c}' @ ${x},${y} (${r.toString(16)} ${g.toString(16)} ${b.toString(16)})`);
-
-	// ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-	// ctx.fillText(c, x, y + 10);
-
 	const i = Math.floor(y / 10) * 39 + Math.floor(x / 8);
 	if (textNodes[i]) {
         textUpdates[i] = {
@@ -133,8 +130,6 @@ function processText(frame) {
             requestAnimationFrame(updateText);
             textFrameQueued = true;
         }
-		// textNodes[i].nodeValue = c;
-		// textNodes[i].parentElement.setAttributeNS(null, 'fill', `rgb(${r}, ${g}, ${b})`);
 	}
 }
 
