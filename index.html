@@ -2,17 +2,51 @@
 <html>
 <head>
 	<title>USB Test</title>
+	<style>
+		@font-face {
+			font-family: 'stealth57';
+			src: url('Assets/stealth57.ttf');
+		}
+		button {
+			font-family: stealth57;
+		}
+		canvas {
+			image-rendering: pixelated;
+		}
+	</style>
 </head>
 <body>
 	<button id="connect">Connect</button>
 
-	<button id="left">&lt;</button>
-	<button id="right">&gt;</button>
-<script>
+	<div>
+		<canvas id="canvas"></canvas>
+	</div>
+
+	<script>
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-let device;
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+scaleCanvas();
+
+function scaleCanvas() {
+	const ratio = window.devicePixelRatio;
+	const scale = 2;
+
+	const width = 320 * scale;
+	const height = 240 * scale;
+	const fontSize = 2 * scale;
+
+	canvas.style.width = `${width}px`;
+	canvas.style.height = `${height}px`;
+	canvas.width = Math.floor(width * ratio);
+	canvas.height = Math.floor(height * ratio);
+
+	ctx.scale(scale * ratio, scale * ratio);
+
+	ctx.font = `${fontSize * ratio}px stealth57`;
+}
 
 function processRect(frame) {
 	// [x x] [y y] [w w] [h h] [r] [g] [b]
@@ -23,7 +57,11 @@ function processRect(frame) {
 	const r = frame[9];
 	const g = frame[10];
 	const b = frame[11];
-	console.log(`RECT ${w}x${h} @ ${x},${y} (${r.toString(16)} ${g.toString(16)} ${b.toString(16)})`);
+
+	// console.log(`RECT ${w}x${h} @ ${x},${y} (${r.toString(16)} ${g.toString(16)} ${b.toString(16)})`);
+
+	ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+	ctx.fillRect(x, y, w, h);
 }
 
 function processText(frame) {
@@ -34,7 +72,11 @@ function processText(frame) {
 	const r = frame[6];
 	const g = frame[7];
 	const b = frame[8];
-	console.log(`'${c}' @ ${x},${y} (${r.toString(16)} ${g.toString(16)} ${b.toString(16)})`);
+
+	// console.log(`'${c}' @ ${x},${y} (${r.toString(16)} ${g.toString(16)} ${b.toString(16)})`);
+
+	ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+	ctx.fillText(c, x, y + 10);
 }
 
 function processFrame(frame) {
@@ -124,6 +166,8 @@ function processIn(dataView) {
 	}
 }
 
+let device;
+
 function readIn() {
 	return device.transferIn(3, 512)
 		.then(result => {
@@ -185,19 +229,52 @@ document
 			.catch(disconnect);
 	});
 
-document
-	.getElementById('left')
-	.addEventListener('click', () => {
-		if (!device)
-			return;
+let keyState = 0;
+const keyMap = {
+	ArrowUp: 6,
+	ArrowDown: 5,
+	ArrowLeft: 7,
+	ArrowRight: 2,
+	ShiftLeft: 4,
+	Space: 3,
+	KeyZ: 1,
+	KeyX: 0
+};
+
+function sendKeyState() {
+	if (!device)
+		return;
 
 	device
-		.transferOut(3, new Uint8Array([0x43, 0x01]))
-		.then(() => wait(50))
-		.then(() => transferOut(3, new Uint8Array([0x43, 0x00])))
+		.transferOut(3, new Uint8Array([0x43, keyState]))
 		.catch(disconnect);
+}
+
+document
+	.addEventListener('keydown', e => {
+		const bit = keyMap[e.code];
+		if (bit !== undefined) {
+			e.preventDefault();
+			const newState = keyState | (1 << bit);
+			if (newState !== keyState) {
+				keyState = newState;
+				sendKeyState();
+			}
+		}
 	});
 
+document
+	.addEventListener('keyup', e => {
+		const bit = keyMap[e.code];
+		if (bit !== undefined) {
+			e.preventDefault();
+			const newState = keyState & ~(1 << bit);
+			if (newState !== keyState) {
+				keyState = newState;
+				sendKeyState();
+			}
+		}
+	});
 </script>
 
 </body>
