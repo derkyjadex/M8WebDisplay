@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>USB Test</title>
+	<title>M8 Display</title>
 	<style>
 		@font-face {
 			font-family: 'stealth57';
@@ -56,12 +56,16 @@ function buildText() {
 			const e = document.createElementNS(xmlns, 'text');
 			e.setAttributeNS(null, 'x', x * 16);
 			e.setAttributeNS(null, 'y', y * 20 + 20);
-			e.setAttributeNS(null, 'fill', '#a0e');
+			e.setAttributeNS(null, 'fill', '#000');
 			const t = document.createTextNode('');
 			e.appendChild(t);
 			svg.appendChild(e);
 
-			textNodes[y * 39 + x] = t;
+            textNodes[y * 39 + x] = {
+                node: t,
+                char: ' ',
+                fill: '#000'
+            };
 		}
 	}
 }
@@ -84,6 +88,26 @@ function processRect(frame) {
 	ctx.fillRect(x, y, w, h);
 }
 
+let textUpdates = {};
+let textFrameQueued = false;
+
+function updateText() {
+    for (const [_, update] of Object.entries(textUpdates)) {
+        const node = update.node;
+        if (update.char !== node.char) {
+            node.node.nodeValue = update.char;
+            node.char = update.char;
+        }
+        if (update.fill !== node.fill) {
+            node.node.parentElement.setAttributeNS(null, 'fill', update.fill);
+            node.fill = update.fill;
+        }
+    }
+
+    textFrameQueued = false;
+    textUpdates = {};
+}
+
 function processText(frame) {
 	// [c] [x x] [y y] [r] [g] [b]
 	const c = String.fromCharCode(frame[1]);
@@ -100,8 +124,17 @@ function processText(frame) {
 
 	const i = Math.floor(y / 10) * 39 + Math.floor(x / 8);
 	if (textNodes[i]) {
-		textNodes[i].nodeValue = c;
-		textNodes[i].parentElement.setAttributeNS(null, 'fill', `rgb(${r}, ${g}, ${b})`);
+        textUpdates[i] = {
+            node: textNodes[i],
+            char: c,
+            fill: `rgb(${r}, ${g}, ${b})`
+        };
+        if (!textFrameQueued) {
+            requestAnimationFrame(updateText);
+            textFrameQueued = true;
+        }
+		// textNodes[i].nodeValue = c;
+		// textNodes[i].parentElement.setAttributeNS(null, 'fill', `rgb(${r}, ${g}, ${b})`);
 	}
 }
 
@@ -396,6 +429,5 @@ function startAudio() {
 		.catch(err => console.log(err));
 }
 </script>
-
 </body>
 </html>
