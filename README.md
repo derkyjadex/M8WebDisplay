@@ -4,6 +4,8 @@ This is alternative frontend for [M8 Headless](https://github.com/DirtyWave/M8He
 
 It runs entirely in the browser and only needs to be hosted on a server to satisfy browser security policies. No network communication is involved.
 
+Try it out at https://derkyjadex.github.io/m8/. **Use at your own risk.**
+
 This project is very much at a proof of concept stage. I've implemented the display (without the waveform), keyboard input and audio routing from the M8's output to the default audio device. It needs a bunch of work to make it more robust and probably fix numerous bugs.
 
 ## Supported Platforms
