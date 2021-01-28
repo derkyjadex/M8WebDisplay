@@ -1,51 +1,77 @@
 <!DOCTYPE html>
 <!--
-	Copyright 2021 James Deery
-	Released under the MIT licence, https://opensource.org/licenses/MIT
+    Copyright 2021 James Deery
+    Released under the MIT licence, https://opensource.org/licenses/MIT
  -->
 <html>
 <head>
-	<title>M8 Display</title>
-	<style>
-		@font-face {
-			font-family: 'stealth57';
-			src: url('stealth57.ttf');
-		}
-		body {
-			font-family: sans-serif;
-		}
-		button {
-			font-family: stealth57;
-		}
-		canvas {
-			image-rendering: pixelated;
-		}
-		canvas, svg {
-			position: absolute;
-			width: 640px;
-			height: 480px;
-			top: 50px;
-			left: 10px;
-		}
-		svg text {
-			font-family: 'stealth57';
-			font-size: 16px;
-		}
-	</style>
+    <title>M8 Display</title>
+    <style>
+        @font-face {
+            font-family: 'stealth57';
+            src: url('stealth57.ttf');
+        }
+        body {
+            font-family: sans-serif;
+        }
+        button {
+            font-family: stealth57;
+        }
+        canvas {
+            image-rendering: pixelated;
+        }
+        canvas, svg {
+            position: absolute;
+            width: 640px;
+            height: 480px;
+            top: 0px;
+            left: 10px;
+        }
+        svg text {
+            font-family: 'stealth57';
+            font-size: 16px;
+        }
+
+        #display {
+            position: relative;
+            user-select: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-	<div>
-		Work in progress, use at your own risk.
-		More details at <a href="https://github.com/derkyjadex/M8WebDisplay">https://github.com/derkyjadex/M8WebDisplay</a>.
-	</div>
-	<button id="connect" autofocus>Connect</button>
+    <div>
+        Work in progress, use at your own risk.
+        More details at <a href="https://github.com/derkyjadex/M8WebDisplay">https://github.com/derkyjadex/M8WebDisplay</a>.
+    </div>
+    <div id="buttons"></div>
 
-	<div>
-		<canvas id="canvas" width="320" height="240"></canvas>
-		<svg id="svg" width="320" height="240"></svg>
-	</div>
+    <div id="serial-fail" class="hidden">
+        <p>Failed to connect over Serial.
+        Are you sure your Teensy is connected and the M8 Headless firmware is loaded?</p>
+        <p>It's possible there's a bug in this code.
+        There may be some messages in the developer console that will help with debugging.</a>
+    </div>
+    <div id="usb-fail" class="hidden">
+        <p>Failed to connect with WebUSB.
+        Are you sure your Teensy is connected and the M8 Headless firmware is loaded?</p>
+        <p>Connecting with WebUSB is known not to work on Windows or Linux.
+        If you are using Chrome you can use Serial instead but you need to enable an experimental flag by going to <code>chrome://flags</code> and enabling "Experimental Web Platform features".</p>
+    </div>
+    <div id="no-serial-usb" class="hidden">
+        <p>Your browser doesn't appear to have Serial or WebUSB support.
+        These are only currently supported in Chrome and some Chrome-derived browsers.</p>
+    </div>
 
-	<script>
+    <div id="display">
+        <canvas id="canvas" width="320" height="240"></canvas>
+        <svg id="svg" width="320" height="240"></svg>
+    </div>
+
+    <script>
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -55,46 +81,46 @@ const ctx = canvas.getContext('2d');
 const textNodes = [];
 
 function buildText() {
-	const xmlns = 'http://www.w3.org/2000/svg';
-	const svg = document.getElementById('svg');
+    const xmlns = 'http://www.w3.org/2000/svg';
+    const svg = document.getElementById('svg');
 
-	while (svg.firstChild) {
-		svg.removeChild(svg.lastChild);
-	}
+    while (svg.firstChild) {
+        svg.removeChild(svg.lastChild);
+    }
 
-	for (let y = 0; y < 25; y++) {
-		for (let x = 0; x < 39; x++) {
-			const e = document.createElementNS(xmlns, 'text');
-			e.setAttributeNS(null, 'x', x * 16);
-			e.setAttributeNS(null, 'y', y * 20 + 20);
-			e.setAttributeNS(null, 'fill', '#000');
-			const t = document.createTextNode('');
-			e.appendChild(t);
-			svg.appendChild(e);
+    for (let y = 0; y < 25; y++) {
+        for (let x = 0; x < 39; x++) {
+            const e = document.createElementNS(xmlns, 'text');
+            e.setAttributeNS(null, 'x', x * 16);
+            e.setAttributeNS(null, 'y', y * 20 + 20);
+            e.setAttributeNS(null, 'fill', '#000');
+            const t = document.createTextNode('');
+            e.appendChild(t);
+            svg.appendChild(e);
 
             textNodes[y * 39 + x] = {
                 node: t,
                 char: ' ',
                 fill: '#000'
             };
-		}
-	}
+        }
+    }
 }
 
 buildText();
 
 function processRect(frame) {
-	// [x x] [y y] [w w] [h h] [r] [g] [b]
-	const x = frame[1] + frame[2] * 256;
-	const y = frame[3] + frame[4] * 256;
-	const w = frame[5] + frame[6] * 256;
-	const h = frame[7] + frame[8] * 256;
-	const r = frame[9];
-	const g = frame[10];
-	const b = frame[11];
+    // [x x] [y y] [w w] [h h] [r] [g] [b]
+    const x = frame[1] + frame[2] * 256;
+    const y = frame[3] + frame[4] * 256;
+    const w = frame[5] + frame[6] * 256;
+    const h = frame[7] + frame[8] * 256;
+    const r = frame[9];
+    const g = frame[10];
+    const b = frame[11];
 
-	ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-	ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+    ctx.fillRect(x, y, w, h);
 
     if (x === 0 && y === 0 && w === 320 && h === 240) {
         document.body.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
@@ -122,16 +148,16 @@ function updateText() {
 }
 
 function processText(frame) {
-	// [c] [x x] [y y] [r] [g] [b]
-	const c = String.fromCharCode(frame[1]);
-	const x = frame[2] + frame[3] * 256;
-	const y = frame[4] + frame[5] * 256;
-	const r = frame[6];
-	const g = frame[7];
-	const b = frame[8];
+    // [c] [x x] [y y] [r] [g] [b]
+    const c = String.fromCharCode(frame[1]);
+    const x = frame[2] + frame[3] * 256;
+    const y = frame[4] + frame[5] * 256;
+    const r = frame[6];
+    const g = frame[7];
+    const b = frame[8];
 
-	const i = Math.floor(y / 10) * 39 + Math.floor(x / 8);
-	if (textNodes[i]) {
+    const i = Math.floor(y / 10) * 39 + Math.floor(x / 8);
+    if (textNodes[i]) {
         textUpdates[i] = {
             node: textNodes[i],
             char: c,
@@ -141,298 +167,400 @@ function processText(frame) {
             requestAnimationFrame(updateText);
             textFrameQueued = true;
         }
-	}
+    }
 }
 
 function processFrame(frame) {
-	const type = frame[0];
-	switch (type) {
-		case 0xfe:
-			if (frame.length >= 12) {
-				processRect(frame);
-			} else {
-				console.log('Bad RECT frame');
-			}
-			break;
+    const type = frame[0];
+    switch (type) {
+        case 0xfe:
+            if (frame.length >= 12) {
+                processRect(frame);
+            } else {
+                console.log('Bad RECT frame');
+            }
+            break;
 
-		case 0xfd:
-			if (frame.length >= 9) {
-				processText(frame);
-			} else {
-				console.log('Bad TEXT frame');
-			}
-			break;
+        case 0xfd:
+            if (frame.length >= 9) {
+                processText(frame);
+            } else {
+                console.log('Bad TEXT frame');
+            }
+            break;
 
-		case 0xfc: // wave
-		case 0xfb: // joypad
-			break;
+        case 0xfc: // wave
+        case 0xfb: // joypad
+            break;
 
-		default:
-			console.log('BAD FRAME');
-	}
+        default:
+            console.log('BAD FRAME');
+    }
 }
 
 let inState = 'normal';
 const inFrame = [];
 
-function processIn(dataView) {
-	for (let i = 0; i < dataView.byteLength; i++) {
-		const b = dataView.getUint8(i);
+function processIn(data) {
+    for (let i = 0; i < data.length; i++) {
+        const b = data[i];
 
-		switch (inState) {
-			case 'normal':
-				switch (b) {
-					case 0xc0:
-						processFrame(inFrame);
-						inFrame.length = 0;
-						break;
+        switch (inState) {
+            case 'normal':
+                switch (b) {
+                    case 0xc0:
+                        processFrame(inFrame);
+                        inFrame.length = 0;
+                        break;
 
-					case 0xdb:
-						inState = 'escape';
-						break;
+                    case 0xdb:
+                        inState = 'escape';
+                        break;
 
-					default:
-						inFrame.push(b);
-						break;
-				}
-				break;
+                    default:
+                        inFrame.push(b);
+                        break;
+                }
+                break;
 
-			case 'escape':
-				switch (b) {
-					case 0xdc:
-						inFrame.push(0xc0);
-						inState = 'normal';
-						break;
+            case 'escape':
+                switch (b) {
+                    case 0xdc:
+                        inFrame.push(0xc0);
+                        inState = 'normal';
+                        break;
 
-					case 0xdd:
-						inFrame.push(0xdb);
-						inState = 'normal';
-						break;
+                    case 0xdd:
+                        inFrame.push(0xdb);
+                        inState = 'normal';
+                        break;
 
-					default:
-						inState = 'error';
-						console.log('Unexpected SLIP sequence');
-						break;
-				}
-				break;
+                    default:
+                        inState = 'error';
+                        console.log('Unexpected SLIP sequence');
+                        break;
+                }
+                break;
 
-			case 'error':
-				switch (b) {
-					case 0xc0:
-						inState = 'normal';
-						inFrame.length = 0;
-						console.log('SLIP recovered');
-						break;
+            case 'error':
+                switch (b) {
+                    case 0xc0:
+                        inState = 'normal';
+                        inFrame.length = 0;
+                        console.log('SLIP recovered');
+                        break;
 
-					default:
-						break;
-				}
-		}
-	}
+                    default:
+                        break;
+                }
+        }
+    }
 }
 
 function resetIn() {
-	inState = 'normal';
-	inFrame.length = 0;
+    inState = 'normal';
+    inFrame.length = 0;
 }
 
 let device;
 
-function readIn() {
-	if (!device)
-		return;
+function usbReadIn() {
+    if (!device)
+        return;
 
-	return device.transferIn(3, 512)
-		.then(result => {
-			if (result.status !== 'ok') {
-				console.log(result);
-			} else {
-				processIn(result.data);
-			}
+    return device.transferIn(3, 512)
+        .then(result => {
+            if (result.status !== 'ok') {
+                console.log(result);
+            } else {
+                processIn(new Uint8Array(result.data.buffer));
+            }
 
-			return readIn();
-		});
+            return usbReadIn();
+        });
 }
 
-function reset() {
-	return device
-		.transferOut(3, new Uint8Array([0x44]))
-		.then(() => wait(50))
-		.then(() => {
-			resetIn();
-			return device.transferOut(3, new Uint8Array([0x45, 0x52]));
-		})
-		.catch(disconnect);
+function usbSendKeys(state) {
+    if (!device)
+        return;
+
+    device
+        .transferOut(3, new Uint8Array([0x43, state]))
+        .catch(usbDisconnect);
 }
 
-function disconnect(error) {
-	device = null;
-	console.error(error);
+function usbReset() {
+    return device
+        .transferOut(3, new Uint8Array([0x44]))
+        .then(() => wait(50))
+        .then(() => {
+            resetIn();
+            return device.transferOut(3, new Uint8Array([0x45, 0x52]));
+        })
+        .catch(usbDisconnect);
 }
 
-function connect() {
-	if (device)
-		return;
+function usbDisconnect(error) {
+    device = null;
+    console.error(error);
+}
 
-	navigator.usb.getDevices()
-		.then(devices => {
-			device = devices.filter(d =>
-				d.vendorId === 0x16c0 &&
-				d.productId === 0x048a)[0];
+async function usbConnect() {
+    if (device)
+        return;
 
-			if (device) {
-				inState = 'normal';
-				inFrame.length = 0;
-				return device;
+    try {
+        const devices = await navigator.usb.getDevices();
+        device = devices.filter(d =>
+            d.vendorId === 0x16c0 &&
+            d.productId === 0x048a)[0];
 
-			} else {
-				return navigator.usb.requestDevice({
-					filters: [{
-						vendorId: 0x16c0,
-						productId: 0x048a
-					}]
-				});
-			}
-		})
-		.then(selectedDevice => {
-			device = selectedDevice;
-			return device.open();
-		})
-		.then(() => device.selectConfiguration(1))
-		.then(() => device.claimInterface(1))
-		.then(() => device.controlTransferOut(
-			{
-				requestType: 'class',
-				recipient: 'interface',
-				request: 0x22,
-				value: 0x03,
-				index: 0x01
-			}))
-		.then(() => device.controlTransferOut(
-			{
-				requestType: 'class',
-				recipient: 'interface',
-				request: 0x20,
-				value: 0x00,
-				index: 0x01
-			},
-			new Uint8Array([0x80, 0x25, 0x00, 0x00, 0x00, 0x00, 0x08])))
-		.then(() => reset())
-		.then(() => readIn())
-		.catch(disconnect);
+        if (!device) {
+            device = await navigator.usb.requestDevice({
+                filters: [{
+                    vendorId: 0x16c0,
+                    productId: 0x048a
+                }]
+            });
+        }
+
+        await device.open();
+        await device.selectConfiguration(1);
+        await device.claimInterface(1);
+        await device.controlTransferOut(
+            {
+                requestType: 'class',
+                recipient: 'interface',
+                request: 0x22,
+                value: 0x03,
+                index: 0x01
+            });
+        await device.controlTransferOut(
+            {
+                requestType: 'class',
+                recipient: 'interface',
+                request: 0x20,
+                value: 0x00,
+                index: 0x01
+            },
+            new Uint8Array([0x80, 0x25, 0x00, 0x00, 0x00, 0x00, 0x08]));
+
+        await usbReset();
+        await usbReadIn();
+    } catch (err) {
+        usbDisconnect();
+        throw err;
+    }
+}
+
+let serialPort, serialReader, serialWriter;
+
+async function serialReadIn() {
+    while (true) {
+        const { value, done } = await serialReader.read();
+        if (done) {
+            serialReader.releaseLock();
+            break;
+        }
+
+        processIn(value);
+    }
+}
+
+async function serialSendKeys(state) {
+    await serialWriter.write(new Uint8Array([0x43, state]));
+}
+
+async function serialReset() {
+    await serialWriter.write(new Uint8Array([0x44]));
+    await wait(50);
+    resetIn();
+    await serialWriter.write(new Uint8Array([0x45, 0x52]));
+}
+
+async function serialDisconnect(error) {
+    console.error(error);
+
+    if (serialReader) {
+        await serialReader.cancel();
+    }
+    if (serialWriter) {
+        await serialWriter.releaseLock();
+    }
+    if (serialPort) {
+        await serialPort.close();
+    }
+    serialPort = null;
+    serialReader = null;
+    serialWriter = null;
+}
+
+async function serialConnect() {
+    if (serialPort)
+        return;
+
+    try {
+        const ports = await navigator.serial.getPorts();
+        serialPort = ports
+            .filter(p => {
+                const info = p.getInfo();
+                return info.usbVendorId === 0x16c0 &&
+                    info.usbProductId === 0x048a
+            })[0];
+
+        if (!serialPort) {
+            serialPort = await navigator.serial.requestPort({
+                filters: [{
+                    usbVendorId: 0x16c0,
+                    usbProductId: 0x048a
+                }]
+            });
+        }
+
+        await serialPort.open({
+            baudRate: 9600,
+            dataBits: 8,
+            stopBits: 1,
+            parity: 'none'
+        });
+
+        serialReader = await serialPort.readable.getReader();
+        serialWriter = await serialPort.writable.getWriter();
+
+        await serialReset();
+        await serialReadIn();
+    } catch (err) {
+        serialDisconnect(err);
+        throw err;
+    }
 }
 
 let keyState = 0;
 const keyMap = {
-	ArrowUp: 6,
-	ArrowDown: 5,
-	ArrowLeft: 7,
-	ArrowRight: 2,
-	ShiftLeft: 4,
-	Space: 3,
-	KeyZ: 1,
-	KeyX: 0
+    ArrowUp: 6,
+    ArrowDown: 5,
+    ArrowLeft: 7,
+    ArrowRight: 2,
+    ShiftLeft: 4,
+    Space: 3,
+    KeyZ: 1,
+    KeyX: 0
 };
 
-document
-	.getElementById('connect')
-	.addEventListener('click', () => {
-		startAudio();
-		connect();
-	});
+if (navigator.serial) {
+    const button = document.createElement('button');
+    button.innerText = 'Connect with Serial';
+    document.getElementById('buttons').append(button);
+    button.addEventListener('click', () => {
+        startAudio();
+        serialConnect()
+            .catch(() => document.getElementById('serial-fail').classList.remove('hidden'));
+    });
 
-function sendKeyState() {
-	if (!device)
-		return;
+} else if (navigator.usb) {
+    const button = document.createElement('button');
+    button.innerText = 'Connect with WebUSB';
+    document.getElementById('buttons').append(button);
+    button.addEventListener('click', () => {
+        startAudio();
+        usbConnect()
+            .catch(() => document.getElementById('usb-fail').classList.remove('hidden'));
+    });
+} else {
+    document.getElementById('no-serial-usb').classList.remove('hidden');
+}
 
-	device
-		.transferOut(3, new Uint8Array([0x43, keyState]))
-		.catch(disconnect);
+function sendKeys() {
+    if (serialPort) {
+        serialSendKeys(keyState);
+    } else if (device) {
+        usbSendKeys(keyState);
+    }
 }
 
 document
-	.addEventListener('keydown', e => {
-		const bit = keyMap[e.code];
-		if (bit !== undefined) {
-			e.preventDefault();
-			const newState = keyState | (1 << bit);
-			if (newState !== keyState) {
-				keyState = newState;
-				sendKeyState();
-			}
-		}
-	});
+    .addEventListener('keydown', e => {
+        const bit = keyMap[e.code];
+        if (bit !== undefined) {
+            e.preventDefault();
+            const newState = keyState | (1 << bit);
+            if (newState !== keyState) {
+                keyState = newState;
+                sendKeys(keyState);
+            }
+        }
+    });
 
 document
-	.addEventListener('keyup', e => {
-		const bit = keyMap[e.code];
-		if (bit !== undefined) {
-			e.preventDefault();
-			const newState = keyState & ~(1 << bit);
-			if (newState !== keyState) {
-				keyState = newState;
-				sendKeyState();
-			}
-		}
-	});
+    .addEventListener('keyup', e => {
+        const bit = keyMap[e.code];
+        if (bit !== undefined) {
+            e.preventDefault();
+            const newState = keyState & ~(1 << bit);
+            if (newState !== keyState) {
+                keyState = newState;
+                sendKeys(keyState);
+            }
+        }
+    });
 
-function deviceInfo() {
-	const info = device.configuration.interfaces
-		.flatMap(i => i.alternates[0].endpoints.map(ep => ({
-			ifNum: i.interfaceNumber,
-			class: i.alternates[0].interfaceClass,
-			subClass: i.alternates[0].interfaceSubclass,
-			protocol: i.alternates[0].interfaceProtocol,
-			epNum: ep.endpointNumber,
-			epDir: ep.direction,
-			epType: ep.type,
-			epPacketSize: ep.packetSize
-		})));
-	console.table(info);
+function usbDeviceInfo() {
+    const info = device.configuration.interfaces
+        .flatMap(i => i.alternates[0].endpoints.map(ep => ({
+            ifNum: i.interfaceNumber,
+            class: i.alternates[0].interfaceClass,
+            subClass: i.alternates[0].interfaceSubclass,
+            protocol: i.alternates[0].interfaceProtocol,
+            epNum: ep.endpointNumber,
+            epDir: ep.direction,
+            epType: ep.type,
+            epPacketSize: ep.packetSize
+        })));
+    console.table(info);
 }
 
 let audio;
 
 function startAudio() {
-	if (audio) {
-		return audio
-			.close()
-			.then(() => {
-				audio = null;
-				return startAudio();
-			});
-	}
+    if (audio) {
+        return audio
+            .close()
+            .then(() => {
+                audio = null;
+                return startAudio();
+            });
+    }
 
-	audio = new AudioContext();
+    audio = new AudioContext();
 
-	navigator.mediaDevices
-		.getUserMedia({ audio: true })
-		.then(stream => navigator.mediaDevices
-			.enumerateDevices())
-		.then(devices => {
-			const device = devices.filter(d =>
-				d.kind === 'audioinput' &&
-				/M8/.test(d.label) &&
-				d.deviceId !== 'default' &&
-				d.deviceId !== 'communications')[0];
+    navigator.mediaDevices
+        .getUserMedia({ audio: true })
+        .then(stream => navigator.mediaDevices
+            .enumerateDevices())
+        .then(devices => {
+            const device = devices.filter(d =>
+                d.kind === 'audioinput' &&
+                /M8/.test(d.label) &&
+                d.deviceId !== 'default' &&
+                d.deviceId !== 'communications')[0];
 
-			if (!device)
-				throw new Error('M8 not found');
+            if (!device)
+                throw new Error('M8 not found');
 
-			return device.deviceId;
-		})
-		.then(deviceId => navigator.mediaDevices
-			.getUserMedia({ audio: {
-				deviceId: { exact: deviceId },
-				autoGainControl: false,
-				echoCancellation: false,
-				noiseSuppression: false
-			} }))
-		.then(stream => {
-			const source = audio.createMediaStreamSource(stream);
-			source.connect(audio.destination);
-		})
-		.catch(err => console.log(err));
+            return device.deviceId;
+        })
+        .then(deviceId => navigator.mediaDevices
+            .getUserMedia({ audio: {
+                deviceId: { exact: deviceId },
+                autoGainControl: false,
+                echoCancellation: false,
+                noiseSuppression: false
+            } }))
+        .then(stream => {
+            const source = audio.createMediaStreamSource(stream);
+            source.connect(audio.destination);
+        })
+        .catch(err => console.log(err));
 }
 </script>
 </body>
