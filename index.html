@@ -24,12 +24,21 @@
             position: absolute;
             width: 640px;
             height: 480px;
-            top: 50px;
+            top: 0px;
             left: 10px;
         }
         svg text {
             font-family: 'stealth57';
             font-size: 16px;
+        }
+
+        #display {
+            position: relative;
+            user-select: none;
+        }
+
+        .hidden {
+            display: none;
         }
     </style>
 </head>
@@ -38,9 +47,26 @@
         Work in progress, use at your own risk.
         More details at <a href="https://github.com/derkyjadex/M8WebDisplay">https://github.com/derkyjadex/M8WebDisplay</a>.
     </div>
-    <button id="connect" autofocus>Connect</button>
+    <div id="buttons"></div>
 
-    <div>
+    <div id="serial-fail" class="hidden">
+        <p>Failed to connect over Serial.
+        Are you sure your Teensy is connected and the M8 Headless firmware is loaded?</p>
+        <p>It's possible there's a bug in this code.
+        There may be some messages in the developer console that will help with debugging.</a>
+    </div>
+    <div id="usb-fail" class="hidden">
+        <p>Failed to connect with WebUSB.
+        Are you sure your Teensy is connected and the M8 Headless firmware is loaded?</p>
+        <p>Connecting with WebUSB is known not to work on Windows or Linux.
+        If you are using Chrome you can use Serial instead but you need to enable an experimental flag by going to <code>chrome://flags</code> and enabling "Experimental Web Platform features".</p>
+    </div>
+    <div id="no-serial-usb" class="hidden">
+        <p>Your browser doesn't appear to have Serial or WebUSB support.
+        These are only currently supported in Chrome and some Chrome-derived browsers.</p>
+    </div>
+
+    <div id="display">
         <canvas id="canvas" width="320" height="240"></canvas>
         <svg id="svg" width="320" height="240"></svg>
     </div>
@@ -247,7 +273,7 @@ function usbReadIn() {
             if (result.status !== 'ok') {
                 console.log(result);
             } else {
-                processIn(result.data.buffer);
+                processIn(new Uint8Array(result.data.buffer));
             }
 
             return usbReadIn();
@@ -279,43 +305,37 @@ function usbDisconnect(error) {
     console.error(error);
 }
 
-function usbConnect() {
+async function usbConnect() {
     if (device)
         return;
 
-    navigator.usb.getDevices()
-        .then(devices => {
-            device = devices.filter(d =>
-                d.vendorId === 0x16c0 &&
-                d.productId === 0x048a)[0];
+    try {
+        const devices = await navigator.usb.getDevices();
+        device = devices.filter(d =>
+            d.vendorId === 0x16c0 &&
+            d.productId === 0x048a)[0];
 
-            if (device) {
-                return device;
+        if (!device) {
+            device = await navigator.usb.requestDevice({
+                filters: [{
+                    vendorId: 0x16c0,
+                    productId: 0x048a
+                }]
+            });
+        }
 
-            } else {
-                return navigator.usb.requestDevice({
-                    filters: [{
-                        vendorId: 0x16c0,
-                        productId: 0x048a
-                    }]
-                });
-            }
-        })
-        .then(selectedDevice => {
-            device = selectedDevice;
-            return device.open();
-        })
-        .then(() => device.selectConfiguration(1))
-        .then(() => device.claimInterface(1))
-        .then(() => device.controlTransferOut(
+        await device.open();
+        await device.selectConfiguration(1);
+        await device.claimInterface(1);
+        await device.controlTransferOut(
             {
                 requestType: 'class',
                 recipient: 'interface',
                 request: 0x22,
                 value: 0x03,
                 index: 0x01
-            }))
-        .then(() => device.controlTransferOut(
+            });
+        await device.controlTransferOut(
             {
                 requestType: 'class',
                 recipient: 'interface',
@@ -323,10 +343,14 @@ function usbConnect() {
                 value: 0x00,
                 index: 0x01
             },
-            new Uint8Array([0x80, 0x25, 0x00, 0x00, 0x00, 0x00, 0x08])))
-        .then(() => usbReset())
-        .then(() => usbReadIn())
-        .catch(usbDisconnect);
+            new Uint8Array([0x80, 0x25, 0x00, 0x00, 0x00, 0x00, 0x08]));
+
+        await usbReset();
+        await usbReadIn();
+    } catch (err) {
+        usbDisconnect();
+        throw err;
+    }
 }
 
 let serialPort, serialReader, serialWriter;
@@ -407,6 +431,7 @@ async function serialConnect() {
         await serialReadIn();
     } catch (err) {
         serialDisconnect(err);
+        throw err;
     }
 }
 
@@ -422,12 +447,36 @@ const keyMap = {
     KeyX: 0
 };
 
-document
-    .getElementById('connect')
-    .addEventListener('click', () => {
+if (navigator.serial) {
+    const button = document.createElement('button');
+    button.innerText = 'Connect with Serial';
+    document.getElementById('buttons').append(button);
+    button.addEventListener('click', () => {
         startAudio();
-        serialConnect();
+        serialConnect()
+            .catch(() => document.getElementById('serial-fail').classList.remove('hidden'));
     });
+
+} else if (navigator.usb) {
+    const button = document.createElement('button');
+    button.innerText = 'Connect with WebUSB';
+    document.getElementById('buttons').append(button);
+    button.addEventListener('click', () => {
+        startAudio();
+        usbConnect()
+            .catch(() => document.getElementById('usb-fail').classList.remove('hidden'));
+    });
+} else {
+    document.getElementById('no-serial-usb').classList.remove('hidden');
+}
+
+function sendKeys() {
+    if (serialPort) {
+        serialSendKeys(keyState);
+    } else if (device) {
+        usbSendKeys(keyState);
+    }
+}
 
 document
     .addEventListener('keydown', e => {
@@ -437,7 +486,7 @@ document
             const newState = keyState | (1 << bit);
             if (newState !== keyState) {
                 keyState = newState;
-                serialSendKeys(keyState);
+                sendKeys(keyState);
             }
         }
     });
@@ -450,7 +499,7 @@ document
             const newState = keyState & ~(1 << bit);
             if (newState !== keyState) {
                 keyState = newState;
-                serialSendKeys(keyState);
+                sendKeys(keyState);
             }
         }
     });
