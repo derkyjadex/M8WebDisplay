@@ -34,11 +34,17 @@
 
         #display {
             position: relative;
+            height: 480px;
             user-select: none;
         }
 
         .hidden {
             display: none;
+        }
+
+        #controls button {
+            user-select: none;
+            padding: 50px;
         }
     </style>
 </head>
@@ -69,6 +75,25 @@
     <div id="display">
         <canvas id="canvas" width="320" height="240"></canvas>
         <svg id="svg" width="320" height="240"></svg>
+    </div>
+
+    <div id="controls">
+        <div style="float: right">
+            <button data-key="option">option</button>
+            <button data-key="edit">edit</button>
+        </div>
+
+        <div style="float: left">
+            <button data-key="left">&lt;</button>
+            <button data-key="up">^</button>
+            <button data-key="down">v</button>
+            <button data-key="right">&gt;</button>
+        </div>
+
+        <div style="float: left">
+            <button data-key="select">select</button>
+            <button data-key="start">start</button>
+        </div>
     </div>
 
     <script>
@@ -435,18 +460,6 @@ async function serialConnect() {
     }
 }
 
-let keyState = 0;
-const keyMap = {
-    ArrowUp: 6,
-    ArrowDown: 5,
-    ArrowLeft: 7,
-    ArrowRight: 2,
-    ShiftLeft: 4,
-    Space: 3,
-    KeyZ: 1,
-    KeyX: 0
-};
-
 if (navigator.serial) {
     const button = document.createElement('button');
     button.innerText = 'Connect with Serial';
@@ -470,39 +483,96 @@ if (navigator.serial) {
     document.getElementById('no-serial-usb').classList.remove('hidden');
 }
 
-function sendKeys() {
+function sendKeys(state) {
     if (serialPort) {
-        serialSendKeys(keyState);
+        serialSendKeys(state);
     } else if (device) {
-        usbSendKeys(keyState);
+        usbSendKeys(state);
     }
 }
 
+let keyState = 0;
+const keyBitMap = {
+    up: 6,
+    down: 5,
+    left: 7,
+    right: 2,
+    select: 4,
+    start: 3,
+    option: 1,
+    edit: 0
+};
+
+function keyDown(key) {
+    if (!key)
+        return;
+
+    const bit = keyBitMap[key];
+    if (bit !== undefined) {
+        const newState = keyState | (1 << bit);
+        if (newState !== keyState) {
+            keyState = newState;
+            sendKeys(keyState);
+        }
+    }
+}
+
+function keyUp(key) {
+    if (!key)
+        return;
+
+    const bit = keyBitMap[key];
+    if (bit !== undefined) {
+        const newState = keyState & ~(1 << bit);
+        if (newState !== keyState) {
+            keyState = newState;
+            sendKeys(keyState);
+        }
+    }
+}
+
+const keyMap = {
+    ArrowUp: 'up',
+    ArrowDown: 'down',
+    ArrowLeft: 'left',
+    ArrowRight: 'right',
+    ShiftLeft: 'select',
+    Space: 'start',
+    KeyZ: 'option',
+    KeyX: 'edit'
+};
+
 document
     .addEventListener('keydown', e => {
-        const bit = keyMap[e.code];
-        if (bit !== undefined) {
+        if (keyMap[e.code]) {
             e.preventDefault();
-            const newState = keyState | (1 << bit);
-            if (newState !== keyState) {
-                keyState = newState;
-                sendKeys(keyState);
-            }
+            keyDown(keyMap[e.code]);
         }
     });
 
 document
     .addEventListener('keyup', e => {
-        const bit = keyMap[e.code];
-        if (bit !== undefined) {
+        if (keyMap[e.code]) {
             e.preventDefault();
-            const newState = keyState & ~(1 << bit);
-            if (newState !== keyState) {
-                keyState = newState;
-                sendKeys(keyState);
-            }
+            keyUp(keyMap[e.code]);
         }
     });
+
+document
+    .getElementById('controls')
+    .addEventListener('mousedown', e => keyDown(e.target.dataset.key));
+
+document
+    .getElementById('controls')
+    .addEventListener('touchstart', e => keyDown(e.target.dataset.key));
+
+document
+    .getElementById('controls')
+    .addEventListener('mouseup', e => keyUp(e.target.dataset.key));
+
+document
+    .getElementById('controls')
+    .addEventListener('touchend', e => keyUp(e.target.dataset.key));
 
 function usbDeviceInfo() {
     const info = device.configuration.interfaces
