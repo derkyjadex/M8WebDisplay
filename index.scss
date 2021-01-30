@@ -1,25 +1,28 @@
-@font-face {
-    font-family: 'stealth57';
-    src: url('stealth57.ttf');
-}
+@use 'font';
+
 body {
     font-family: sans-serif;
     background-color: #111;
     color: #eee;
 }
+
 a {
     color: #ddf;
 }
+
 a:visited {
     color: #fdf;
 }
+
 button {
     font-family: stealth57;
     height: 50px;
 }
+
 canvas {
     image-rendering: pixelated;
 }
+
 canvas, #svg {
     position: absolute;
     width: 640px;
@@ -27,6 +30,7 @@ canvas, #svg {
     top: 0px;
     left: 10px;
 }
+
 #svg text {
     font-family: 'stealth57';
     font-size: 16px;

@@ -1,70 +1,70 @@
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 export class UsbConnection {
-    #device;
-    #parser;
+    _device;
+    _parser;
 
     constructor(parser) {
-        this.#parser = parser;
+        this._parser = parser;
     }
 
     get isConnected() {
-        return !!this.#device;
+        return !!this._device;
     }
 
-    #readIn() {
-        if (!this.#device)
+    _readIn() {
+        if (!this._device)
             return;
 
-        return this.#device.transferIn(3, 512)
+        return this._device.transferIn(3, 512)
             .then(result => {
                 if (result.status !== 'ok') {
                     console.log(result);
                 } else {
-                    this.#parser.process(new Uint8Array(result.data.buffer));
+                    this._parser.process(new Uint8Array(result.data.buffer));
                 }
 
-                return this.#readIn();
+                return this._readIn();
             });
     }
 
     sendKeys(state) {
-        if (!this.#device)
+        if (!this._device)
             return;
 
-        this.#device
+        this._device
             .transferOut(3, new Uint8Array([0x43, state]))
-            .catch(this.#disconnect.bind(this));
+            .catch(this._disconnect.bind(this));
     }
 
-    #reset() {
-        return this.#device
+    _reset() {
+        return this._device
             .transferOut(3, new Uint8Array([0x44]))
             .then(() => wait(50))
             .then(() => {
-                this.#parser.reset();
-                return this.#device.transferOut(3, new Uint8Array([0x45, 0x52]));
+                this._parser.reset();
+                return this._device.transferOut(3, new Uint8Array([0x45, 0x52]));
             })
-            .catch(this.#disconnect.bind(this));
+            .catch(this._disconnect.bind(this));
     }
 
-    #disconnect(error) {
-        this.#device = null;
+    _disconnect(error) {
+        this._device = null;
         console.error(error);
     }
 
     async connect() {
-        if (this.#device)
+        if (this._device)
             return;
 
         try {
             const devices = await navigator.usb.getDevices();
-            this.#device = devices.filter(d =>
+            this._device = devices.filter(d =>
                 d.vendorId === 0x16c0 &&
                 d.productId === 0x048a)[0];
 
-            if (!this.#device) {
-                this.#device = await navigator.usb.requestDevice({
+            if (!this._device) {
+                this._device = await navigator.usb.requestDevice({
                     filters: [{
                         vendorId: 0x16c0,
                         productId: 0x048a
@@ -72,10 +72,10 @@ export class UsbConnection {
                 });
             }
 
-            await this.#device.open();
-            await this.#device.selectConfiguration(1);
-            await this.#device.claimInterface(1);
-            await this.#device.controlTransferOut(
+            await this._device.open();
+            await this._device.selectConfiguration(1);
+            await this._device.claimInterface(1);
+            await this._device.controlTransferOut(
                 {
                     requestType: 'class',
                     recipient: 'interface',
@@ -83,7 +83,7 @@ export class UsbConnection {
                     value: 0x03,
                     index: 0x01
                 });
-            await this.#device.controlTransferOut(
+            await this._device.controlTransferOut(
                 {
                     requestType: 'class',
                     recipient: 'interface',
@@ -93,16 +93,16 @@ export class UsbConnection {
                 },
                 new Uint8Array([0x80, 0x25, 0x00, 0x00, 0x00, 0x00, 0x08]));
 
-            await this.#reset();
-            await this.#readIn();
+            await this._reset();
+            await this._readIn();
         } catch (err) {
-            this.#disconnect();
+            this._disconnect();
             throw err;
         }
     }
 
     deviceInfo() {
-        const info = this.#device.configuration.interfaces
+        const info = this._device.configuration.interfaces
             .flatMap(i => i.alternates[0].endpoints.map(ep => ({
                 ifNum: i.interfaceNumber,
                 class: i.alternates[0].interfaceClass,

@@ -1,15 +1,15 @@
 export class Renderer {
-    #canvas = document.getElementById('canvas');
-    #ctx = canvas.getContext('2d');
-    #textNodes = [];
-    #textUpdates = {};
-    #textFrameQueued = false;
+    _canvas = document.getElementById('canvas');
+    _ctx = canvas.getContext('2d');
+    _textNodes = [];
+    _textUpdates = {};
+    _textFrameQueued = false;
 
     constructor() {
-        this.#buildText();
+        this._buildText();
     }
 
-    #buildText() {
+    _buildText() {
         const xmlns = 'http://www.w3.org/2000/svg';
         const svg = document.getElementById('svg');
 
@@ -22,31 +22,31 @@ export class Renderer {
                 const e = document.createElementNS(xmlns, 'text');
                 e.setAttributeNS(null, 'x', x * 16);
                 e.setAttributeNS(null, 'y', y * 20 + 20);
-                e.setAttributeNS(null, 'fill', '#000');
+                e.setAttributeNS(null, 'fill', '_000');
                 const t = document.createTextNode('');
                 e.appendChild(t);
                 svg.appendChild(e);
 
-                this.#textNodes[y * 39 + x] = {
+                this._textNodes[y * 39 + x] = {
                     node: t,
                     char: ' ',
-                    fill: '#000'
+                    fill: '_000'
                 };
             }
         }
     }
 
     drawRect(x, y, w, h, r, g, b) {
-        this.#ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-        this.#ctx.fillRect(x, y, w, h);
+        this._ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+        this._ctx.fillRect(x, y, w, h);
 
         if (x === 0 && y === 0 && w === 320 && h === 240) {
             document.body.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
         }
     }
 
-    #updateText() {
-        for (const [_, update] of Object.entries(this.#textUpdates)) {
+    _updateText() {
+        for (const [_, update] of Object.entries(this._textUpdates)) {
             const node = update.node;
             if (update.char !== node.char) {
                 node.node.nodeValue = update.char;
@@ -58,21 +58,21 @@ export class Renderer {
             }
         }
 
-        this.#textFrameQueued = false;
-        this.#textUpdates = {};
+        this._textFrameQueued = false;
+        this._textUpdates = {};
     }
 
     drawText(c, x, y, r, g, b) {
         const i = Math.floor(y / 10) * 39 + Math.floor(x / 8);
-        if (this.#textNodes[i]) {
-            this.#textUpdates[i] = {
-                node: this.#textNodes[i],
+        if (this._textNodes[i]) {
+            this._textUpdates[i] = {
+                node: this._textNodes[i],
                 char: c,
                 fill: `rgb(${r}, ${g}, ${b})`
             };
-            if (!this.#textFrameQueued) {
-                requestAnimationFrame(this.#updateText.bind(this));
-                this.#textFrameQueued = true;
+            if (!this._textFrameQueued) {
+                requestAnimationFrame(this._updateText.bind(this));
+                this._textFrameQueued = true;
             }
         }
     }

@@ -3,20 +3,20 @@ const ESCAPE = Symbol('escape');
 const ERROR = Symbol('error');
 
 export class Parser {
-    #state = NORMAL;
-    #buffer = [];
-    #renderer;
+    _state = NORMAL;
+    _buffer = [];
+    _renderer;
 
     constructor(renderer) {
-        this.#renderer = renderer;
+        this._renderer = renderer;
     }
 
-    #processFrame(frame) {
+    _processFrame(frame) {
         const type = frame[0];
         switch (type) {
             case 0xfe:
                 if (frame.length >= 12) {
-                    this.#renderer.drawRect(
+                    this._renderer.drawRect(
                         frame[1] + frame[2] * 256,
                         frame[3] + frame[4] * 256,
                         frame[5] + frame[6] * 256,
@@ -31,7 +31,7 @@ export class Parser {
 
             case 0xfd:
                 if (frame.length >= 9) {
-                    this.#renderer.drawText(
+                    this._renderer.drawText(
                         String.fromCharCode(frame[1]),
                         frame[2] + frame[3] * 256,
                         frame[4] + frame[5] * 256,
@@ -56,20 +56,20 @@ export class Parser {
         for (let i = 0; i < data.length; i++) {
             const b = data[i];
 
-            switch (this.#state) {
+            switch (this._state) {
                 case NORMAL:
                     switch (b) {
                         case 0xc0:
-                            this.#processFrame(this.#buffer);
-                            this.#buffer.length = 0;
+                            this._processFrame(this._buffer);
+                            this._buffer.length = 0;
                             break;
 
                         case 0xdb:
-                            this.#state = ESCAPE;
+                            this._state = ESCAPE;
                             break;
 
                         default:
-                            this.#buffer.push(b);
+                            this._buffer.push(b);
                             break;
                     }
                     break;
@@ -77,17 +77,17 @@ export class Parser {
                 case ESCAPE:
                     switch (b) {
                         case 0xdc:
-                            this.#buffer.push(0xc0);
-                            this.#state = NORMAL;
+                            this._buffer.push(0xc0);
+                            this._state = NORMAL;
                             break;
 
                         case 0xdd:
-                            this.#buffer.push(0xdb);
-                            this.#state = NORMAL;
+                            this._buffer.push(0xdb);
+                            this._state = NORMAL;
                             break;
 
                         default:
-                            this.#state = ERROR;
+                            this._state = ERROR;
                             console.log('Unexpected SLIP sequence');
                             break;
                     }
@@ -96,8 +96,8 @@ export class Parser {
                 case ERROR:
                     switch (b) {
                         case 0xc0:
-                            this.#state = NORMAL;
-                            this.#buffer.length = 0;
+                            this._state = NORMAL;
+                            this._buffer.length = 0;
                             console.log('SLIP recovered');
                             break;
 
@@ -109,8 +109,8 @@ export class Parser {
     }
 
     reset() {
-        this.#state = NORMAL;
-        this.#buffer.length = 0;
+        this._state = NORMAL;
+        this._buffer.length = 0;
     }
 }
 
