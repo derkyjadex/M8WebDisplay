@@ -7,70 +7,8 @@
 <head>
     <title>M8 Display</title>
     <meta name="viewport" content="width: device-width, initial-scale=1">
+    <link rel="stylesheet" href="index.css">
     <style>
-        @font-face {
-            font-family: 'stealth57';
-            src: url('stealth57.ttf');
-        }
-        body {
-            font-family: sans-serif;
-            background-color: #111;
-            color: #eee;
-        }
-        a {
-            color: #ddf;
-        }
-        a:visited {
-            color: #fdf;
-        }
-        button {
-            font-family: stealth57;
-            height: 50px;
-        }
-        canvas {
-            image-rendering: pixelated;
-        }
-        canvas, #svg {
-            position: absolute;
-            width: 640px;
-            height: 480px;
-            top: 0px;
-            left: 10px;
-        }
-        #svg text {
-            font-family: 'stealth57';
-            font-size: 16px;
-        }
-
-        #display {
-            position: relative;
-            height: 480px;
-            width: 640px;
-            margin: 0 auto;
-            user-select: none;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        #controls button {
-            user-select: none;
-            padding: 50px;
-        }
-
-        #controls {
-            position: relative;
-            width: 640px;
-            margin: 0 auto;
-        }
-
-        #controls rect {
-            fill: #333;
-            rx: 10px;
-            stroke: #aaa;
-            stroke-width: 3px;
-        }
     </style>
 </head>
 <body>
@@ -115,6 +53,6 @@
         </svg>
     </div>
 
-    <script src="index.js"></script>
+    <script type="module" src="main.js"></script>
 </body>
 </html>
