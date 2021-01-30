@@ -22,7 +22,7 @@ build/worker.js: worker.js build/index.html $(NPM)
 	@sed "s/INDEXHASH/`md5 -q build/index.html`/" $< \
 	  | npx terser --mangle --compress > $@
 
-build/index.css: $(wildcard *.scss)
+build/index.css: $(wildcard *.scss) $(NPM)
 	@echo Building $@
 	@mkdir -p $(@D)
 	@npx sass --style=compressed index.scss > $@
