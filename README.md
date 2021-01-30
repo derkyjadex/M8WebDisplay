@@ -10,11 +10,21 @@ This project is very much at a proof of concept stage. I've implemented the disp
 
 ## Supported Platforms
 
-This relies on the WebUSB API to communicate with the M8, which means that it only works on Google Chrome/Chromium-derived browsers. So it should work on Chrome, Edge and Opera on Windows, macOS and Linux. It *probably* works on Chrome for Android too. I've only actually tested with Chrome on macOS though.
+The following should generally work, details are below.
+
+- Chrome on macOS
+- Chrome on Windows, with experimental flag
+- Chrome on Linux, with experimental flag
+- Chrome on Android, without audio
+
+This relies on the Web Serial API to communicate with the M8. This API is currently only supported by Google Chrome as an experimental feature. It is due to be fully available in the [next Chrome release](https://www.chromestatus.com/features/schedule) on 2nd March 2021. Until then you can enable it by going to `chrome://flags` and enabling the "Experimental Web Platform features" option.
+
+As a temporary alternative the code can fallback to using the WebUSB API, which is supported in the current version of Chrome. However this only works correctly on macOS and Android due to the way that Windows and Linux load their serial drivers.
+
+The way that that Android handles USB audio devices (such as the M8) prevents us from being able to redirect the audio to the phone's speakers or headphone output. When the M8 is attached, Android appears to completely disable the internal audio interface and uses the M8 for all audio input and output instead. So the page is able to receive the audio from the M8 but it does not have anywhere to redirect it to other than the M8 itself.
 
 ## TODO/Ideas
 
-- Modularise code
 - Handle connection events and error conditions
 - Start audio as early as possible (after first "user gesture")
 - Selectable audio output device
@@ -22,7 +32,7 @@ This relies on the WebUSB API to communicate with the M8, which means that it on
 - Render everything with WebGL?
 - Custom key mappings
 - Gamepad input
-- ServiceWorker/PWA for full offline support
+- Notify updates from ServiceWorker
 - Teensy firmware loader
 
 ## Licence
