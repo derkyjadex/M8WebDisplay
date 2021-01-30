@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "http-server": "^0.12.3",
     "juice": "^7.0.0",
     "rollup": "^2.38.1",
     "sass": "^1.32.5",

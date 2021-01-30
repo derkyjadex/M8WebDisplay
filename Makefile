@@ -1,12 +1,16 @@
 DEPLOY = \
 	build/index.html \
 	build/worker.js \
-	build/app.webmanifest \
-	build/icon.png
+	app.webmanifest \
+	icon.png
+
+DEPLOY_DIR = deploy/
 
 NPM = node_modules/
 
-build/main.js: $(wildcard *.js)
+index.html: build/index.css
+
+build/main.js: $(wildcard *.js) $(NPM)
 	@echo Building $@
 	@mkdir -p $(@D)
 	@npx rollup main.js \
@@ -18,14 +22,6 @@ build/worker.js: worker.js build/index.html $(NPM)
 	@sed "s/INDEXHASH/`md5 -q build/index.html`/" $< \
 	  | npx terser --mangle --compress > $@
 
-build/app.webmanifest: app.webmanifest
-	@echo Building $@
-	@cp $< $@
-
-build/icon.png: icon.png
-	@echo Building $@
-	@cp $< $@
-
 build/index.css: $(wildcard *.scss)
 	@echo Building $@
 	@mkdir -p $(@D)
@@ -33,10 +29,12 @@ build/index.css: $(wildcard *.scss)
 
 build/index.html: index.html build/index.css build/main.js $(NPM)
 	@echo Building $@
+	@sed -e 's/"build\/index.css"/"index.css"/' $< > $@.tmp
 	@npx juice \
 	  --apply-style-tags false \
 	  --remove-style-tags false \
-	  $< $@
+	  $@.tmp $@
+	@rm $@.tmp
 
 $(NPM):
 	@echo Installing node packages
@@ -48,4 +46,13 @@ clean:
 	@echo Cleaning
 	@$(RM) -r build/*
 
-.PHONY: all clean
+run: index.html $(NPM)
+	@npx http-server
+
+deploy: $(DEPLOY)
+	@echo Deploying
+	@mkdir -p $(DEPLOY_DIR)
+	@rm -rf $(DEPLOY_DIR)/*
+	@cp $^ $(DEPLOY_DIR)
+
+.PHONY: all run deploy clean
