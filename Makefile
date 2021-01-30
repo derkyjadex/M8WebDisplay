@@ -1,6 +1,8 @@
 DEPLOY = \
 	build/index.html \
-	build/worker.js
+	build/worker.js \
+	build/app.webmanifest \
+	build/icon.png
 
 NPM = node_modules/
 
@@ -15,6 +17,14 @@ build/worker.js: worker.js build/index.html $(NPM)
 	@mkdir -p $(@D)
 	@sed "s/INDEXHASH/`md5 -q build/index.html`/" $< \
 	  | npx terser --mangle --compress > $@
+
+build/app.webmanifest: app.webmanifest
+	@echo Building $@
+	@cp $< $@
+
+build/icon.png: icon.png
+	@echo Building $@
+	@cp $< $@
 
 build/index.css: $(wildcard *.scss)
 	@echo Building $@

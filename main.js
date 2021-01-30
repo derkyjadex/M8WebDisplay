@@ -37,3 +37,5 @@ if (navigator.serial) {
 } else {
     document.getElementById('no-serial-usb').classList.remove('hidden');
 }
+
+navigator.serviceWorker.register('worker.js');
