@@ -44,6 +44,18 @@ export class Parser {
                 break;
 
             case 0xfc: // wave
+                if (frame.length >= 4) {
+                    const colour = frame.splice(0, 3);
+                    this._renderer.drawWave(
+                        colour[0],
+                        colour[1],
+                        colour[2],
+                        frame);
+                } else {
+                    console.log('Bad WAVE frame');
+                }
+                break;
+
             case 0xfb: // joypad
                 break;
 

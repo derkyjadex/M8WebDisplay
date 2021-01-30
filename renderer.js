@@ -4,6 +4,7 @@ export class Renderer {
     _textNodes = [];
     _textUpdates = {};
     _textFrameQueued = false;
+    _backgroundColour = 'rgb(0, 0, 0)';
 
     constructor() {
         this._buildText();
@@ -37,11 +38,13 @@ export class Renderer {
     }
 
     drawRect(x, y, w, h, r, g, b) {
-        this._ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+        const colour = `rgb(${r}, ${g}, ${b})`
+        this._ctx.fillStyle = colour;
         this._ctx.fillRect(x, y, w, h);
 
         if (x === 0 && y === 0 && w === 320 && h === 240) {
-            document.body.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+            this._backgroundColour = colour;
+            document.body.style.backgroundColor = colour;
         }
     }
 
@@ -74,6 +77,17 @@ export class Renderer {
                 requestAnimationFrame(this._updateText.bind(this));
                 this._textFrameQueued = true;
             }
+        }
+    }
+
+    drawWave(r, g, b, data) {
+        this._ctx.fillStyle = this._backgroundColour;
+        this._ctx.fillRect(0, 0, 320, 21);
+
+        this._ctx.fillStyle = `rgb(${r}, ${g}, ${b})`
+        for (let i = 0; i < data.length; i++) {
+            const y = Math.min(data[i], 20);
+            this._ctx.fillRect(i, y, 1, 1);
         }
     }
 }
