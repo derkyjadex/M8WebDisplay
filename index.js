@@ -80,7 +80,6 @@ class Renderer {
     }
 }
 
-
 class Parser {
     #state = 'normal';
     #buffer = [];

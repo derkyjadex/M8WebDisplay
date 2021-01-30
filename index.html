@@ -6,6 +6,7 @@
 <html>
 <head>
     <title>M8 Display</title>
+    <meta name="viewport" content="width: device-width, initial-scale=1">
     <style>
         @font-face {
             font-family: 'stealth57';
@@ -13,21 +14,30 @@
         }
         body {
             font-family: sans-serif;
+            background-color: #111;
+            color: #eee;
+        }
+        a {
+            color: #ddf;
+        }
+        a:visited {
+            color: #fdf;
         }
         button {
             font-family: stealth57;
+            height: 50px;
         }
         canvas {
             image-rendering: pixelated;
         }
-        canvas, svg {
+        canvas, #svg {
             position: absolute;
             width: 640px;
             height: 480px;
             top: 0px;
             left: 10px;
         }
-        svg text {
+        #svg text {
             font-family: 'stealth57';
             font-size: 16px;
         }
@@ -35,6 +45,8 @@
         #display {
             position: relative;
             height: 480px;
+            width: 640px;
+            margin: 0 auto;
             user-select: none;
         }
 
@@ -45,6 +57,19 @@
         #controls button {
             user-select: none;
             padding: 50px;
+        }
+
+        #controls {
+            position: relative;
+            width: 640px;
+            margin: 0 auto;
+        }
+
+        #controls rect {
+            fill: #333;
+            rx: 10px;
+            stroke: #aaa;
+            stroke-width: 3px;
         }
     </style>
 </head>
@@ -78,22 +103,16 @@
     </div>
 
     <div id="controls">
-        <div style="float: right">
-            <button data-key="option">option</button>
-            <button data-key="edit">edit</button>
-        </div>
-
-        <div style="float: left">
-            <button data-key="left">&lt;</button>
-            <button data-key="up">^</button>
-            <button data-key="down">v</button>
-            <button data-key="right">&gt;</button>
-        </div>
-
-        <div style="float: left">
-            <button data-key="select">select</button>
-            <button data-key="start">start</button>
-        </div>
+        <svg width="640" height="560">
+            <rect data-key="edit" x="490" y="10" width="140" height="140" />
+            <rect data-key="option" x="330" y="10" width="140" height="140" />
+            <rect data-key="up" x="170" y="80" width="140" height="140" />
+            <rect data-key="left" x="10" y="240" width="140" height="140" />
+            <rect data-key="down" x="170" y="240" width="140" height="140" />
+            <rect data-key="right" x="330" y="240" width="140" height="140" />
+            <rect data-key="select" x="170" y="410" width="140" height="140" />
+            <rect data-key="start" x="330" y="410" width="140" height="140" />
+        </svg>
     </div>
 
     <script src="index.js"></script>
