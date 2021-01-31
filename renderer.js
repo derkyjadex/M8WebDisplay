@@ -117,4 +117,26 @@ export class Renderer {
             this._queueFrame();
         }
     }
+
+    clear() {
+        this._rects = [{
+            colour: this._backgroundColour,
+            x: 0, y: 0, w: 320, h: 240,
+        }];
+
+        this._waveData = [];
+        this._waveUpdated = true;
+
+        this._textUpdates = {};
+        for (let i = 0; i < this._textNodes.length; i++) {
+            this._textUpdates[i] = {
+                node: this._textNodes[i],
+                char: ' ',
+                fill: `rgb(0, 0, 0)`
+            };
+
+        }
+
+        this._queueFrame();
+    }
 }

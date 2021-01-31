@@ -42,9 +42,7 @@ function updateKeys(key, isDown, e) {
 
     keyState = newState;
 
-    if (connection.isConnected) {
-        connection.sendKeys(keyState);
-    }
+    connection.sendKeys(keyState);
 }
 
 export function setup(connection_) {

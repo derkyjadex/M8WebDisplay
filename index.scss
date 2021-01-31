@@ -1,67 +1,83 @@
 @use 'font';
 
 body {
-    font-family: sans-serif;
-    background-color: #111;
-    color: #eee;
+  font-family: sans-serif;
+  background-color: #111;
+  color: #eee;
+  margin: 10px;
 }
 
-a {
-    color: #ddf;
+a, a:visited {
+  color: #0ef;
 }
 
-a:visited {
-    color: #fdf;
+.hidden {
+  display: none;
 }
 
-button {
-    font-family: stealth57;
-    height: 50px;
+#info {
+  margin-top: -10px;
+  text-align: center;
+  padding: 5px;
 }
 
-canvas {
+#display {
+  position: relative;
+  height: 480px;
+  width: 640px;
+  margin: 0 auto;
+  user-select: none;
+
+  canvas {
     image-rendering: pixelated;
-}
+  }
 
-canvas, #svg {
+  canvas, #svg {
     position: absolute;
     width: 640px;
     height: 480px;
     top: 0px;
-    left: 10px;
-}
+    left: 0px;
+  }
 
-#svg text {
+  #svg text {
     font-family: 'stealth57';
     font-size: 16px;
-}
+  }
 
-#display {
+  #buttons {
     position: relative;
-    height: 480px;
-    width: 640px;
-    margin: 0 auto;
-    user-select: none;
-}
+    top: 25px;
+    text-align: center;
 
-.hidden {
-    display: none;
-}
+    button {
+      font-family: stealth57;
+      height: 50px;
+    }
+  }
 
-#controls button {
-    user-select: none;
-    padding: 50px;
+  .error {
+    position: absolute;
+    top: 100px;
+    left: 100px;
+    right: 100px;
+    border: 3px solid #fff;
+    border-radius: 3px;
+    padding: 10px;
+    background-color: #a22;
+    user-select: text;
+  }
 }
 
 #controls {
-    position: relative;
-    width: 640px;
-    margin: 0 auto;
-}
+  position: relative;
+  width: 640px;
+  margin: 0 auto;
 
-#controls rect {
+  rect {
     fill: #333;
     rx: 10px;
     stroke: #aaa;
     stroke-width: 3px;
+  }
 }

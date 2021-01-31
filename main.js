@@ -9,8 +9,29 @@ import * as Audio from './audio.js';
 const renderer = new Renderer();
 const parser = new Parser(renderer);
 
+function show(query) {
+    document
+        .querySelectorAll(query)
+        .forEach(e => e.classList.remove('hidden'));
+}
+
+function hide(query) {
+    document
+        .querySelectorAll(query)
+        .forEach(e => e.classList.add('hidden'));
+}
+
+function updateDisplay(isConnected) {
+    if (isConnected) {
+        hide('#buttons, #display .error');
+    } else {
+        renderer.clear();
+        show('#buttons');
+    }
+}
+
 if (navigator.serial) {
-    const connection = new SerialConnection(parser);
+    const connection = new SerialConnection(parser, updateDisplay);
     Input.setup(connection);
 
     const button = document.createElement('button');
@@ -19,11 +40,11 @@ if (navigator.serial) {
     button.addEventListener('click', () => {
         Audio.start();
         connection.connect()
-            .catch(() => document.getElementById('serial-fail').classList.remove('hidden'));
+            .catch(() => show('#serial-fail'));
     });
 
 } else if (navigator.usb) {
-    const connection = new UsbConnection(parser);
+    const connection = new UsbConnection(parser, updateDisplay);
     Input.setup(connection);
 
     const button = document.createElement('button');
@@ -32,7 +53,7 @@ if (navigator.serial) {
     button.addEventListener('click', () => {
         Audio.start();
         connection.connect()
-            .catch(() => document.getElementById('usb-fail').classList.remove('hidden'));
+            .catch(() => show('#usb-fail'));
     });
 } else {
     document.getElementById('no-serial-usb').classList.remove('hidden');
