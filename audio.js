@@ -37,6 +37,10 @@ export async function start(attempts = 1) {
         const source = ctx.createMediaStreamSource(stream);
         source.connect(ctx.destination);
 
+        if (ctx.state !== 'running') {
+            waitForUserGesture();
+        }
+
     } catch (err) {
         console.error(err);
         stop();
@@ -57,4 +61,17 @@ async function findDeviceId() {
 export async function stop() {
     ctx && await ctx.close().catch(() => {});
     ctx = null;
+}
+
+function waitForUserGesture() {
+    const events = ['keydown', 'mousedown', 'touchstart'];
+
+    function resume() {
+        ctx.resume();
+        events.forEach(e =>
+            document.removeEventListener(e, resume));
+    }
+
+    events.forEach(e =>
+        document.addEventListener(e, resume));
 }
