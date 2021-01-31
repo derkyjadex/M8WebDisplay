@@ -2,56 +2,70 @@ const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 export class SerialConnection {
     _port;
-    _reader;
-    _writer;
     _parser;
+    _onConnectionChanged;
 
-    constructor(parser) {
+    constructor(parser, onConnectionChanged) {
         this._parser = parser;
+        this._onConnectionChanged = onConnectionChanged;
     }
 
     get isConnected() {
         return !!this._port;
     }
 
-    async _readIn() {
-        while (true) {
-            const { value, done } = await this._reader.read();
-            if (done) {
-                this._reader.releaseLock();
-                break;
-            }
+    async _startReading() {
+        try {
+            while (this._port) {
+                const { value, done } = await this._port.reader.read();
+                if (value) {
+                    try {
+                        this._parser.process(value);
+                    } catch (err) {
+                        console.error(err);
+                    }
+                }
 
-            this._parser.process(value);
+                if (done)
+                    return;
+            }
+        } catch (err) {
+            console.error(err);
+            this.disconnect();
         }
     }
 
     async sendKeys(state) {
-        await this._writer.write(new Uint8Array([0x43, state]));
+        if (!this._port || !this._port.writer)
+            return;
+
+        try {
+            await this._port.writer.write(new Uint8Array([0x43, state]));
+        } catch (err) {
+            console.error(err);
+            this.disconnect();
+        }
     }
 
     async _reset() {
-        await this._writer.write(new Uint8Array([0x44]));
+        await this._port.writer.write(new Uint8Array([0x44]));
         await wait(50);
         this._parser.reset();
-        await this._writer.write(new Uint8Array([0x45, 0x52]));
+        await this._port.writer.write(new Uint8Array([0x45, 0x52]));
     }
 
-    async _disconnect(error) {
-        console.error(error);
+    async disconnect() {
+        const port = this._port;
+        if (!port)
+            return;
 
-        if (this._reader) {
-            await this._reader.cancel();
-        }
-        if (this._writer) {
-            await this._writer.releaseLock();
-        }
-        if (this._port) {
-            await this._port.close();
-        }
         this._port = null;
-        this._reader = null;
-        this._writer = null;
+
+        port.reader && await port.reader.cancel().catch(() => {});
+        port.writer && await port.writer.close().catch(() => {});
+        await port.close().catch(() => {});
+
+        this._onConnectionChanged(false);
     }
 
     async connect() {
@@ -80,17 +94,25 @@ export class SerialConnection {
                 baudRate: 9600,
                 dataBits: 8,
                 stopBits: 1,
-                parity: 'none'
+                parity: 'none',
+                bufferSize: 512
             });
 
-            this._reader = await this._port.readable.getReader();
-            this._writer = await this._port.writable.getWriter();
+            this._port.reader = await this._port.readable.getReader();
+            this._port.writer = await this._port.writable.getWriter();
 
             await this._reset();
-            await this._readIn();
+            this._startReading();
+
+            this._onConnectionChanged(true);
+
         } catch (err) {
-            this._disconnect(err);
-            throw err;
+            this.disconnect(err);
+
+            if (err.code !== DOMException.NOT_FOUND_ERR) {
+                console.error(err);
+                throw err;
+            }
         }
     }
 }
