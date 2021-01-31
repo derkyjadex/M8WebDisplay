@@ -25,10 +25,7 @@ The way that that Android handles USB audio devices (such as the M8) prevents us
 
 ## TODO/Ideas
 
-- Handle connection events and error conditions
-- Start audio as early as possible (after first "user gesture")
 - Selectable audio output device
-- Render waveform
 - Render everything with WebGL?
 - Custom key mappings
 - Gamepad input
