@@ -3,54 +3,62 @@ const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 export class UsbConnection {
     _device;
     _parser;
+    _onConnectionChanged;
 
-    constructor(parser) {
+    constructor(parser, onConnectionChanged) {
         this._parser = parser;
+        this._onConnectionChanged = onConnectionChanged;
     }
 
     get isConnected() {
         return !!this._device;
     }
 
-    _readIn() {
-        if (!this._device)
-            return;
-
-        return this._device.transferIn(3, 512)
-            .then(result => {
+    async _startReading() {
+        try {
+            while (this._device) {
+                const result = await this._device.transferIn(3, 512);
                 if (result.status !== 'ok') {
-                    console.log(result);
+                    this.disconnect();
+
                 } else {
                     this._parser.process(new Uint8Array(result.data.buffer));
                 }
-
-                return this._readIn();
-            });
+            }
+        } catch (err) {
+            console.error(err);
+            this.disconnect();
+        }
     }
 
-    sendKeys(state) {
+    async sendKeys(state) {
         if (!this._device)
             return;
 
-        this._device
-            .transferOut(3, new Uint8Array([0x43, state]))
-            .catch(this._disconnect.bind(this));
+        try {
+            await this._device.transferOut(3, new Uint8Array([0x43, state]));
+        } catch (err) {
+            console.error(err);
+            this.disconnect();
+        }
     }
 
-    _reset() {
-        return this._device
-            .transferOut(3, new Uint8Array([0x44]))
-            .then(() => wait(50))
-            .then(() => {
-                this._parser.reset();
-                return this._device.transferOut(3, new Uint8Array([0x45, 0x52]));
-            })
-            .catch(this._disconnect.bind(this));
+    async _reset() {
+        await this._device.transferOut(3, new Uint8Array([0x44]));
+        await wait(50);
+        this._parser.reset();
+        await this._device.transferOut(3, new Uint8Array([0x45, 0x52]));
     }
 
-    _disconnect(error) {
+    async disconnect() {
+        const device = this._device;
+        if (!device)
+            return;
+
         this._device = null;
-        console.error(error);
+
+        await device.close().catch(() => {});
+        this._onConnectionChanged(false);
     }
 
     async connect() {
@@ -94,10 +102,17 @@ export class UsbConnection {
                 new Uint8Array([0x80, 0x25, 0x00, 0x00, 0x00, 0x00, 0x08]));
 
             await this._reset();
-            await this._readIn();
+            this._startReading();
+
+            this._onConnectionChanged(true);
+
         } catch (err) {
-            this._disconnect();
-            throw err;
+            this.disconnect(err);
+
+            if (err.code !== DOMException.NOT_FOUND_ERR) {
+                console.error(err);
+                throw err;
+            }
         }
     }
 
