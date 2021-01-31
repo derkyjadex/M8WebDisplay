@@ -47,7 +47,7 @@ clean:
 	@$(RM) -r build/*
 
 run: index.html $(NPM)
-	@npx http-server
+	@npx ws --log.format dev
 
 deploy: $(DEPLOY)
 	@echo Deploying
