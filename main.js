@@ -43,6 +43,9 @@ if (navigator.serial) {
             .catch(() => show('#serial-fail'));
     });
 
+    window.addEventListener('beforeunload', e =>
+        connection.disconnect());
+
 } else if (navigator.usb) {
     const connection = new UsbConnection(parser, updateDisplay);
     Input.setup(connection);
@@ -55,6 +58,7 @@ if (navigator.serial) {
         connection.connect()
             .catch(() => show('#usb-fail'));
     });
+
 } else {
     document.getElementById('no-serial-usb').classList.remove('hidden');
 }
