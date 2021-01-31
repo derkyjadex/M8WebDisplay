@@ -49,6 +49,9 @@ if (navigator.serial) {
     window.addEventListener('beforeunload', e =>
         connection.disconnect());
 
+    connection.connect(true)
+        .catch(() => show('#buttons'));
+
 } else if (navigator.usb) {
     const connection = new UsbConnection(parser, updateDisplay);
     Input.setup(connection);
@@ -59,6 +62,8 @@ if (navigator.serial) {
     button.addEventListener('click', () =>
         connection.connect()
             .catch(() => show('#usb-fail')));
+
+    show('#buttons');
 
 } else {
     document.getElementById('no-serial-usb').classList.remove('hidden');

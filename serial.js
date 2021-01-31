@@ -13,11 +13,9 @@ export class SerialConnection {
 
         navigator.serial.addEventListener('connect', e => {
             if (!this._waitingForUserSelection) {
-                this.connect();
+                this.connect().catch(() => {});
             }
         });
-
-        this.connect(true).catch(() => {});
     }
 
     get isConnected() {
