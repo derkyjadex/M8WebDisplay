@@ -1,44 +1,60 @@
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+
 let ctx;
 
-export function start() {
-    if (ctx) {
-        return ctx
-            .close()
-            .then(() => {
-                ctx = null;
-                return start();
-            });
-    }
+export async function start(attempts = 1) {
+    if (ctx)
+        return;
 
-    ctx = new AudioContext();
+    try {
+        ctx = new AudioContext();
 
-    navigator.mediaDevices
-        .getUserMedia({ audio: true })
-        .then(stream => navigator.mediaDevices
-            .enumerateDevices())
-        .then(devices => {
-            const device = devices.filter(d =>
-                d.kind === 'audioinput' &&
-                /M8/.test(d.label) &&
-                d.deviceId !== 'default' &&
-                d.deviceId !== 'communications')[0];
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        let deviceId;
+        while (true) {
+            deviceId = await findDeviceId();
+            if (deviceId)
+                break;
 
-            if (!device)
-                throw new Error('M8 not found');
+            if (--attempts > 0) {
+                await wait(300);
+            } else {
+                break;
+            }
+        }
 
-            return device.deviceId;
-        })
-        .then(deviceId => navigator.mediaDevices
+        if (!deviceId)
+            throw new Error('M8 not found');
+
+        const stream = await navigator.mediaDevices
             .getUserMedia({ audio: {
                 deviceId: { exact: deviceId },
                 autoGainControl: false,
                 echoCancellation: false,
                 noiseSuppression: false
-            } }))
-        .then(stream => {
-            const source = ctx.createMediaStreamSource(stream);
-            source.connect(ctx.destination);
-        })
-        .catch(err => console.log(err));
+            } })
+
+        const source = ctx.createMediaStreamSource(stream);
+        source.connect(ctx.destination);
+
+    } catch (err) {
+        console.error(err);
+        stop();
+    }
 }
 
+async function findDeviceId() {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    return devices
+        .filter(d =>
+            d.kind === 'audioinput' &&
+            /M8/.test(d.label) &&
+            d.deviceId !== 'default' &&
+            d.deviceId !== 'communications')
+        .map(d => d.deviceId)[0];
+}
+
+export async function stop() {
+    ctx && await ctx.close().catch(() => {});
+    ctx = null;
+}

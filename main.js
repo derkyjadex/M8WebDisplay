@@ -24,9 +24,14 @@ function hide(query) {
 function updateDisplay(isConnected) {
     if (isConnected) {
         hide('#buttons, #display .error');
+
+        Audio.start(10);
+
     } else {
         renderer.clear();
         show('#buttons');
+
+        Audio.stop();
     }
 }
 
@@ -37,11 +42,9 @@ if (navigator.serial) {
     const button = document.createElement('button');
     button.innerText = 'Connect with Serial';
     document.getElementById('buttons').append(button);
-    button.addEventListener('click', () => {
-        Audio.start();
+    button.addEventListener('click', () =>
         connection.connect()
-            .catch(() => show('#serial-fail'));
-    });
+            .catch(() => show('#serial-fail')));
 
     window.addEventListener('beforeunload', e =>
         connection.disconnect());
@@ -53,11 +56,9 @@ if (navigator.serial) {
     const button = document.createElement('button');
     button.innerText = 'Connect with WebUSB';
     document.getElementById('buttons').append(button);
-    button.addEventListener('click', () => {
-        Audio.start();
+    button.addEventListener('click', () =>
         connection.connect()
-            .catch(() => show('#usb-fail'));
-    });
+            .catch(() => show('#usb-fail')));
 
 } else {
     document.getElementById('no-serial-usb').classList.remove('hidden');
