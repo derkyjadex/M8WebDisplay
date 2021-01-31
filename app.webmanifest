@@ -1,0 +1,9 @@
+{
+  "name": "M8 Display",
+  "short_name": "M8 Display",
+  "description": "Web display for M8 Headless",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#000",
+  "icons": [{"src": "icon.png", "sizes": "192x192", "type": "image/png"}]
+}
