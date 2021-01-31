@@ -45,11 +45,11 @@ export class Parser {
 
             case 0xfc: // wave
                 if (frame.length >= 4) {
-                    const colour = frame.splice(0, 3);
+                    const colour = frame.splice(0, 4);
                     this._renderer.drawWave(
-                        colour[0],
                         colour[1],
                         colour[2],
+                        colour[3],
                         frame);
                 } else {
                     console.log('Bad WAVE frame');

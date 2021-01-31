@@ -2,9 +2,13 @@ export class Renderer {
     _canvas = document.getElementById('canvas');
     _ctx = canvas.getContext('2d');
     _textNodes = [];
-    _textUpdates = {};
-    _textFrameQueued = false;
     _backgroundColour = 'rgb(0, 0, 0)';
+
+    _frameQueued = false;
+    _rects = [];
+    _waveColour = 'rgb(255, 255, 255)';
+    _waveData = [];
+    _textUpdates = {};
 
     constructor() {
         this._buildText();
@@ -37,18 +41,26 @@ export class Renderer {
         }
     }
 
-    drawRect(x, y, w, h, r, g, b) {
-        const colour = `rgb(${r}, ${g}, ${b})`
-        this._ctx.fillStyle = colour;
-        this._ctx.fillRect(x, y, w, h);
-
-        if (x === 0 && y === 0 && w === 320 && h === 240) {
-            this._backgroundColour = colour;
-            document.body.style.backgroundColor = colour;
+    _renderFrame() {
+        for (let i = 0; i < this._rects.length; i++) {
+            const rect = this._rects[i];
+            this._ctx.fillStyle = rect.colour;
+            this._ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
         }
-    }
+        this._rects.length = 0;
 
-    _updateText() {
+        if (this._waveUpdated) {
+            this._ctx.fillStyle = this._backgroundColour;
+            this._ctx.fillRect(0, 0, 320, 21);
+
+            this._ctx.fillStyle = this._waveColour;
+            for (let i = 0; i < this._waveData.length; i++) {
+                const y = Math.min(this._waveData[i], 20);
+                this._ctx.fillRect(i, y, 1, 1);
+            }
+        }
+        this._waveUpdated = false;
+
         for (const [_, update] of Object.entries(this._textUpdates)) {
             const node = update.node;
             if (update.char !== node.char) {
@@ -60,9 +72,28 @@ export class Renderer {
                 node.fill = update.fill;
             }
         }
-
-        this._textFrameQueued = false;
         this._textUpdates = {};
+
+        this._frameQueued = false;
+    }
+
+    _queueFrame() {
+        if (!this._frameQueued) {
+            requestAnimationFrame(() => this._renderFrame());
+            this._frameQueued = true;
+        }
+    }
+
+    drawRect(x, y, w, h, r, g, b) {
+        const colour = `rgb(${r}, ${g}, ${b})`
+        if (x === 0 && y === 0 && w === 320 && h === 240) {
+            this._rects.length = 0;
+            this._backgroundColour = colour;
+            document.body.style.backgroundColor = colour;
+        }
+
+        this._rects.push({ colour, x, y, w, h });
+        this._queueFrame();
     }
 
     drawText(c, x, y, r, g, b) {
@@ -73,21 +104,17 @@ export class Renderer {
                 char: c,
                 fill: `rgb(${r}, ${g}, ${b})`
             };
-            if (!this._textFrameQueued) {
-                requestAnimationFrame(this._updateText.bind(this));
-                this._textFrameQueued = true;
-            }
+            this._queueFrame();
         }
     }
 
     drawWave(r, g, b, data) {
-        this._ctx.fillStyle = this._backgroundColour;
-        this._ctx.fillRect(0, 0, 320, 21);
+        this._waveColour = `rgb(${r}, ${g}, ${b})`
 
-        this._ctx.fillStyle = `rgb(${r}, ${g}, ${b})`
-        for (let i = 0; i < data.length; i++) {
-            const y = Math.min(data[i], 20);
-            this._ctx.fillRect(i, y, 1, 1);
+        if (data.length > 0 || this._waveData.length > 0) {
+            this._waveData = data.slice();
+            this._waveUpdated = true;
+            this._queueFrame();
         }
     }
 }
