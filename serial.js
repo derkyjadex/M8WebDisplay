@@ -4,10 +4,20 @@ export class SerialConnection {
     _port;
     _parser;
     _onConnectionChanged;
+    _waitingForUserSelection;
 
     constructor(parser, onConnectionChanged) {
         this._parser = parser;
         this._onConnectionChanged = onConnectionChanged;
+        this._waitingForUserSelection = false;
+
+        navigator.serial.addEventListener('connect', e => {
+            if (!this._waitingForUserSelection) {
+                this.connect();
+            }
+        });
+
+        this.connect(true).catch(() => {});
     }
 
     get isConnected() {
@@ -63,13 +73,12 @@ export class SerialConnection {
 
         await port.writer.write(new Uint8Array([0x44])).catch(() => {});
         port.reader && await port.reader.cancel().catch(() => {});
-        port.writer && await port.writer.close().catch(() => {});
         await port.close().catch(() => {});
 
         this._onConnectionChanged(false);
     }
 
-    async connect() {
+    async connect(autoConnecting = false) {
         if (this._port)
             return;
 
@@ -82,14 +91,12 @@ export class SerialConnection {
                         info.usbProductId === 0x048a
                 })[0];
 
-            if (!this._port) {
-                this._port = await navigator.serial.requestPort({
-                    filters: [{
-                        usbVendorId: 0x16c0,
-                        usbProductId: 0x048a
-                    }]
-                });
+            if (!this._port && !autoConnecting) {
+                this._port = await this._requestPort();
             }
+
+            if (!this._port)
+                return;
 
             await this._port.open({
                 baudRate: 9600,
@@ -108,12 +115,29 @@ export class SerialConnection {
             this._onConnectionChanged(true);
 
         } catch (err) {
+            console.error(err);
             this.disconnect(err);
+            throw err;
+        }
+    }
 
+    async _requestPort() {
+        this._waitingForUserSelection = true;
+        try {
+            return await navigator.serial.requestPort({
+                filters: [{
+                    usbVendorId: 0x16c0,
+                    usbProductId: 0x048a
+                }]
+            });
+        } catch (err) {
             if (err.code !== DOMException.NOT_FOUND_ERR) {
-                console.error(err);
                 throw err;
+            } else {
+                return null;
             }
+        } finally {
+            this._waitingForUserSelection = false;
         }
     }
 }
