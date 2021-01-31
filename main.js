@@ -49,8 +49,7 @@ if (navigator.serial) {
     window.addEventListener('beforeunload', e =>
         connection.disconnect());
 
-    connection.connect(true)
-        .catch(() => show('#buttons'));
+    connection.connect(true).catch(() => {});
 
 } else if (navigator.usb) {
     const connection = new UsbConnection(parser, updateDisplay);

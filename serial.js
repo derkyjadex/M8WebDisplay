@@ -89,8 +89,12 @@ export class SerialConnection {
                         info.usbProductId === 0x048a
                 })[0];
 
-            if (!this._port && !autoConnecting) {
-                this._port = await this._requestPort();
+            if (!this._port) {
+                if (autoConnecting) {
+                    this._onConnectionChanged(false);
+                } else {
+                    this._port = await this._requestPort();
+                }
             }
 
             if (!this._port)
