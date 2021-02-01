@@ -1,4 +1,4 @@
-const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+import { wait } from './util.js';
 
 export class UsbConnection {
     _device;

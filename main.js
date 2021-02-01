@@ -2,24 +2,13 @@ import { UsbConnection } from './usb.js';
 import { SerialConnection } from './serial.js';
 import { Parser } from './parser.js';
 import { Renderer } from './renderer.js';
+import { show, hide } from './util.js';
 
 import * as Input from './input.js';
 import * as Audio from './audio.js';
 
 const renderer = new Renderer();
 const parser = new Parser(renderer);
-
-function show(query) {
-    document
-        .querySelectorAll(query)
-        .forEach(e => e.classList.remove('hidden'));
-}
-
-function hide(query) {
-    document
-        .querySelectorAll(query)
-        .forEach(e => e.classList.add('hidden'));
-}
 
 function updateDisplay(isConnected) {
     if (isConnected) {
