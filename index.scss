@@ -5,6 +5,7 @@ body {
   background-color: #111;
   color: #eee;
   margin: 10px;
+  font-size: 16px;
 }
 
 a, a:visited {
@@ -52,7 +53,20 @@ a, a:visited {
 
     button {
       font-family: stealth57;
-      height: 50px;
+      border: 3px solid #fff;
+      border-radius: 10px;
+      padding: 20px;
+      background-color: #999;
+      color: #fff;
+
+        &:active {
+            background-color: #777;
+        }
+
+        &:focus {
+            border-style: dashed;
+            outline: 0;
+        }
     }
   }
 
@@ -62,10 +76,18 @@ a, a:visited {
     left: 100px;
     right: 100px;
     border: 3px solid #fff;
-    border-radius: 3px;
-    padding: 10px;
+    border-radius: 10px;
+    padding: 20px;
     background-color: #a22;
     user-select: text;
+
+    p {
+        margin-top: 0;
+    }
+
+    p:last-child {
+        margin-bottom: 0;
+    }
   }
 }
 
@@ -80,4 +102,31 @@ a, a:visited {
     stroke: #aaa;
     stroke-width: 3px;
   }
+}
+
+#reload {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+
+    button {
+        border: 3px solid #fff;
+        border-radius: 10px 10px 0 0;
+        border-bottom-width: 0;
+        padding: 20px;
+        background-color: #55a;
+        color: #fff;
+        font-size: 16px;
+
+        &:active {
+            background-color: #338;
+        }
+
+        &:focus {
+            border-style: dashed;
+            outline: 0;
+        }
+    }
 }
