@@ -29,7 +29,6 @@ The way that that Android handles USB audio devices (such as the M8) prevents us
 - Render everything with WebGL?
 - Custom key mappings
 - Gamepad input
-- Notify updates from ServiceWorker
 - Teensy firmware loader
 
 ## Licence

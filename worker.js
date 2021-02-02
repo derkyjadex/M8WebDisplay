@@ -1,10 +1,9 @@
 const cacheName = 'INDEXHASH';
 
 self.addEventListener('install', event => {
-    self.skipWaiting();
     event.waitUntil(
         caches.open(cacheName)
-            .then(cache => cache.addAll(['.'])));
+            .then(cache => cache.add('.')));
 });
 
 self.addEventListener('activate', event =>
@@ -19,3 +18,9 @@ self.addEventListener('fetch', event =>
         caches.match(event.request)
             .then(response =>
                 response || fetch(event.request))));
+
+self.addEventListener('message', event => {
+    if (event.data.action === 'skipWaiting') {
+        self.skipWaiting();
+    }
+});

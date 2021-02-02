@@ -3,6 +3,7 @@ import { SerialConnection } from './serial.js';
 import { Parser } from './parser.js';
 import { Renderer } from './renderer.js';
 import { show, hide } from './util.js';
+import { setup as setupWorker } from './worker-setup.js';
 
 import * as Input from './input.js';
 import * as Audio from './audio.js';
@@ -57,4 +58,4 @@ if (navigator.serial) {
     document.getElementById('no-serial-usb').classList.remove('hidden');
 }
 
-navigator.serviceWorker.register('worker.js');
+setupWorker();
