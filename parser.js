@@ -4,7 +4,8 @@ const ERROR = Symbol('error');
 
 export class Parser {
     _state = NORMAL;
-    _buffer = [];
+    _buffer = new Uint8Array(512);
+    _i = 0;
     _renderer;
 
     constructor(renderer) {
@@ -12,8 +13,7 @@ export class Parser {
     }
 
     _processFrame(frame) {
-        const type = frame[0];
-        switch (type) {
+        switch (frame[0]) {
             case 0xfe:
                 if (frame.length >= 12) {
                     this._renderer.drawRect(
@@ -45,12 +45,11 @@ export class Parser {
 
             case 0xfc: // wave
                 if (frame.length >= 4) {
-                    const colour = frame.splice(0, 4);
                     this._renderer.drawWave(
-                        colour[1],
-                        colour[2],
-                        colour[3],
-                        frame);
+                        frame[1],
+                        frame[2],
+                        frame[3],
+                        frame.subarray(4));
                 } else {
                     console.log('Bad WAVE frame');
                 }
@@ -72,8 +71,8 @@ export class Parser {
                 case NORMAL:
                     switch (b) {
                         case 0xc0:
-                            this._processFrame(this._buffer);
-                            this._buffer.length = 0;
+                            this._processFrame(this._buffer.subarray(0, this._i));
+                            this._i = 0;
                             break;
 
                         case 0xdb:
@@ -81,7 +80,7 @@ export class Parser {
                             break;
 
                         default:
-                            this._buffer.push(b);
+                            this._buffer[this._i++] = b;
                             break;
                     }
                     break;
@@ -89,12 +88,12 @@ export class Parser {
                 case ESCAPE:
                     switch (b) {
                         case 0xdc:
-                            this._buffer.push(0xc0);
+                            this._buffer[this._i++] = 0xc0;
                             this._state = NORMAL;
                             break;
 
                         case 0xdd:
-                            this._buffer.push(0xdb);
+                            this._buffer[this._i++] = 0xdb;
                             this._state = NORMAL;
                             break;
 
@@ -109,7 +108,7 @@ export class Parser {
                     switch (b) {
                         case 0xc0:
                             this._state = NORMAL;
-                            this._buffer.length = 0;
+                            this._i = 0;
                             console.log('SLIP recovered');
                             break;
 
@@ -122,7 +121,7 @@ export class Parser {
 
     reset() {
         this._state = NORMAL;
-        this._buffer.length = 0;
+        this._i = 0;
     }
 }
 

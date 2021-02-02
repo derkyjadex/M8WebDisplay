@@ -7,7 +7,8 @@ export class Renderer {
     _frameQueued = false;
     _rects = [];
     _waveColour = 'rgb(255, 255, 255)';
-    _waveData = [];
+    _waveData = new Uint8Array(320);
+    _waveOn = false;
     _textUpdates = {};
 
     constructor() {
@@ -53,10 +54,12 @@ export class Renderer {
             this._ctx.fillStyle = this._backgroundColour;
             this._ctx.fillRect(0, 0, 320, 21);
 
-            this._ctx.fillStyle = this._waveColour;
-            for (let i = 0; i < this._waveData.length; i++) {
-                const y = Math.min(this._waveData[i], 20);
-                this._ctx.fillRect(i, y, 1, 1);
+            if (this._waveOn) {
+                this._ctx.fillStyle = this._waveColour;
+                for (let i = 0; i < this._waveData.length; i++) {
+                    const y = Math.min(this._waveData[i], 20);
+                    this._ctx.fillRect(i, y, 1, 1);
+                }
             }
         }
         this._waveUpdated = false;
@@ -111,8 +114,14 @@ export class Renderer {
     drawWave(r, g, b, data) {
         this._waveColour = `rgb(${r}, ${g}, ${b})`
 
-        if (data.length > 0 || this._waveData.length > 0) {
-            this._waveData = data.slice();
+        if (data.length == 320) {
+            this._waveData.set(data);
+            this._waveOn = true;
+            this._waveUpdated = true;
+            this._queueFrame();
+
+        } else if (this._waveOn) {
+            this._waveOn = false;
             this._waveUpdated = true;
             this._queueFrame();
         }
@@ -124,7 +133,7 @@ export class Renderer {
             x: 0, y: 0, w: 320, h: 240,
         }];
 
-        this._waveData = [];
+        this._waveOn = false;
         this._waveUpdated = true;
 
         this._textUpdates = {};
