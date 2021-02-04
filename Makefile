@@ -10,6 +10,10 @@ NPM = node_modules/
 
 index.html: build/index.css
 
+font.js: font.png
+	@echo Building $@
+	@echo "export const font = 'data:image/png;base64,`base64 $^`';" > $@
+
 build/main.js: $(wildcard *.js) $(NPM)
 	@echo Building $@
 	@mkdir -p $(@D)
