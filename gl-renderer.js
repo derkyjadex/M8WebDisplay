@@ -7,27 +7,7 @@ export class Renderer {
     _canvas;
     _gl;
     _bg = [0, 0, 0];
-
-    _rectShader;
-    _rectVao;
-    _rectShapes = new Uint16Array(MAX_RECTS * 4);
-    _rectColours = new Uint8Array(MAX_RECTS * 3);
-    _rectCount = 0;
-    _rectsClear = true;
-    _rectsTex;
-    _rectsFramebuffer;
-    _blitShader;
-
-    _textShader;
-    _textVao;
-    _textTex;
-    _textColours = new Uint8Array(40 * 24 * 3);
-    _textChars = new Uint8Array(40 * 24);
-
     _frameQueued = false;
-    _waveData = new Uint8Array(320);
-    _waveColour = new Float32Array([0.5, 1, 1]);
-    _waveOn = false;
 
     constructor() {
         document.getElementById('svg').remove();
@@ -53,8 +33,19 @@ export class Renderer {
         this._queueFrame();
     }
 
+    _rectShader;
+    _rectVao;
+    _rectShapes = new Uint16Array(MAX_RECTS * 4);
+    _rectColours = new Uint8Array(MAX_RECTS * 3);
+    _rectCount = 0;
+    _rectsClear = true;
+    _rectsTex;
+    _rectsFramebuffer;
+    _blitShader;
+
     _setupRects(gl) {
         this._rectShader = buildProgram(gl, 'rect');
+
         this._rectVao = gl.createVertexArray();
         gl.bindVertexArray(this._rectVao);
 
@@ -73,6 +64,7 @@ export class Renderer {
         gl.vertexAttribDivisor(1, 1);
 
         this._rectsTex = gl.createTexture();
+        gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this._rectsTex);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 320, 240, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -85,44 +77,8 @@ export class Renderer {
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this._rectsTex, 0);
 
         this._blitShader = buildProgram(gl, 'blit');
-        this._blitShader.srcUniform = gl.getUniformLocation(this._blitShader, 'src');
-    }
-
-    _setupText(gl) {
-        this._textShader = buildProgram(gl, 'text');
-        this._textShader.fontUniform = gl.getUniformLocation(this._textShader, 'font');
-        this._textVao = gl.createVertexArray();
-        gl.bindVertexArray(this._textVao);
-
-        this._textColours.glBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this._textColours.glBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, this._textColours, gl.DYNAMIC_DRAW);
-        gl.enableVertexAttribArray(0);
-        gl.vertexAttribPointer(0, 3, gl.UNSIGNED_BYTE, true, 0, 0);
-        gl.vertexAttribDivisor(0, 1);
-
-        this._textChars.glBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this._textChars.glBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, this._textChars, gl.DYNAMIC_DRAW);
-        gl.enableVertexAttribArray(1);
-        gl.vertexAttribPointer(1, 1, gl.UNSIGNED_BYTE, false, 0, 0);
-        gl.vertexAttribDivisor(1, 1);
-
-        this._textTex = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, this._textTex);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 470, 7, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-        const fontImage = new Image();
-        fontImage.onload = () => {
-            gl.bindTexture(gl.TEXTURE_2D, this._textTex);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 470, 7, 0, gl.RGBA, gl.UNSIGNED_BYTE, fontImage);
-            this._queueFrame();
-        }
-        fontImage.src = font;
+        gl.useProgram(this._blitShader);
+        gl.uniform1i(gl.getUniformLocation(this._blitShader, 'src'), 0);
     }
 
     _renderRects(gl) {
@@ -153,9 +109,6 @@ export class Renderer {
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.useProgram(this._blitShader);
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this._rectsTex);
-        gl.uniform1i(this._blitShader.srcUniform, 0);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
 
@@ -187,11 +140,55 @@ export class Renderer {
         this._queueFrame();
     }
 
+    _textShader;
+    _textVao;
+    _textTex;
+    _textColours = new Uint8Array(40 * 24 * 3);
+    _textChars = new Uint8Array(40 * 24);
+
+    _setupText(gl) {
+        this._textShader = buildProgram(gl, 'text');
+        gl.useProgram(this._textShader);
+        gl.uniform1i(gl.getUniformLocation(this._textShader, 'font'), 1);
+
+        this._textVao = gl.createVertexArray();
+        gl.bindVertexArray(this._textVao);
+
+        this._textColours.glBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this._textColours.glBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, this._textColours, gl.DYNAMIC_DRAW);
+        gl.enableVertexAttribArray(0);
+        gl.vertexAttribPointer(0, 3, gl.UNSIGNED_BYTE, true, 0, 0);
+        gl.vertexAttribDivisor(0, 1);
+
+        this._textChars.glBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this._textChars.glBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, this._textChars, gl.DYNAMIC_DRAW);
+        gl.enableVertexAttribArray(1);
+        gl.vertexAttribPointer(1, 1, gl.UNSIGNED_BYTE, false, 0, 0);
+        gl.vertexAttribDivisor(1, 1);
+
+        this._textTex = gl.createTexture();
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, this._textTex);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 470, 7, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+        const fontImage = new Image();
+        fontImage.onload = () => {
+            gl.activeTexture(gl.TEXTURE1);
+            gl.bindTexture(gl.TEXTURE_2D, this._textTex);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 470, 7, 0, gl.RGBA, gl.UNSIGNED_BYTE, fontImage);
+            this._queueFrame();
+        }
+        fontImage.src = font;
+    }
+
     _renderText(gl) {
         gl.useProgram(this._textShader);
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this._textTex);
-        gl.uniform1i(this._textShader.fontUniform, 0);
         gl.bindVertexArray(this._textVao);
 
         if (this._textColours.updated) {
@@ -221,6 +218,10 @@ export class Renderer {
         this._queueFrame();
     }
         
+    _waveData = new Uint8Array(320);
+    _waveColour = new Float32Array([0.5, 1, 1]);
+    _waveOn = false;
+
     _setupWave(gl) {
         this._waveShader = buildProgram(gl, 'wave');
         this._waveShader.colourUniform = gl.getUniformLocation(this._waveShader, 'colour');
@@ -270,8 +271,8 @@ export class Renderer {
     _randomData() {
         for (let i = 0; i < 10; i++) {
             this.drawRect(
-                rand(20, 300),
-                rand(20, 220),
+                rand(0, 300),
+                rand(0, 220),
                 rand(5, 25),
                 rand(5, 25),
                 rand(0, 255),
@@ -291,9 +292,9 @@ export class Renderer {
         }
 
         this.drawWave(
-            Math.random(),
-            Math.random(),
-            Math.random(),
+            rand(0, 255),
+            rand(0, 255),
+            rand(0, 255),
             new Uint8Array(Array(320).fill().map(() => rand(0, 20))));
     }
 

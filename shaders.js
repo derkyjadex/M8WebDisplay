@@ -24,7 +24,7 @@ void main() {
 
     pos = ((corners[gl_VertexID] * size + pos) + camOffset) * camScale;
 
-    gl_Position = vec4(char == 0.0 ? vec2(0.0) : pos, 0.0, 1.0);
+    gl_Position = vec4(char == 0.0 ? vec2(2.0) : pos, 0.0, 1.0);
     colourV = colour;
     fontCoord = (vec2(char - 1.0, 0.0) + corners[gl_VertexID]) * vec2(5.0, 7.0);
 }
