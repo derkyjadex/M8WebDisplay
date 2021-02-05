@@ -1,107 +1,157 @@
 @use 'font';
 
+$m8: #00efff;
+$m8-font: 'stealth57';
+
 body {
-  font-family: sans-serif;
-  background-color: #111;
-  color: #eee;
-  margin: 10px;
-  font-size: 16px;
+    font-family: sans-serif;
+    background-color: #111;
+    color: #eee;
+    margin: 10px;
+    font-size: 16px;
 }
 
 a, a:visited {
-  color: #0ef;
+    color: $m8;
+
+    &:focus {
+        outline: 1px solid $m8;
+    }
 }
 
 .hidden {
-  display: none;
+    display: none;
+}
+
+label, input, select, button {
+    appearance: none;
+    font-family: $m8-font;
+    font-size: 14px;
+    background-color: #000;
+    color: #fff;
+
+    &:hover {
+        background-color: $m8;
+        color: #000;
+    }
+
+    &:active {
+        background-color: darken($m8, 10%);
+        color: #fff;
+    }
+
+    &:focus, &:focus-within {
+        outline: none;
+        color: $m8;
+
+        &:hover {
+            color: #000;
+        }
+
+        &:active {
+            color: #fff;
+        }
+    }
+}
+
+button {
+    border: 3px solid #fff;
+    padding: 20px;
+}
+
+input[type=checkbox] {
+    font-family: $m8-font;
+
+    &::after {
+        content: 'ON';
+    }
+
+    &:checked::after {
+        content: 'OFF';
+    }
+}
+
+select {
+    padding: 5px 32px 5px 5px;
+    background-color: transparent;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23fff' stroke-width='3' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+
+    font-family: sans-serif;
+    font-size: 12px;
 }
 
 #info {
-  margin-top: -10px;
-  text-align: center;
-  padding: 5px;
+    margin-top: -10px;
+    text-align: center;
+    padding: 5px;
 }
 
 #display {
-  position: relative;
-  height: 480px;
-  width: 640px;
-  margin: 0 auto;
-  user-select: none;
-
-  canvas {
-    image-rendering: pixelated;
-  }
-
-  canvas, #svg {
-    position: absolute;
-    width: 640px;
-    height: 480px;
-    top: 0px;
-    left: 0px;
-  }
-
-  #svg text {
-    font-family: 'stealth57';
-    font-size: 16px;
-  }
-
-  #buttons {
     position: relative;
-    top: 25px;
-    text-align: center;
+    height: 480px;
+    width: 640px;
+    margin: 0 auto;
+    user-select: none;
 
-    button {
-      font-family: stealth57;
-      border: 3px solid #fff;
-      border-radius: 10px;
-      padding: 20px;
-      background-color: #999;
-      color: #fff;
+    canvas {
+        image-rendering: pixelated;
+    }
 
-        &:active {
-            background-color: #777;
+    canvas, #svg {
+        position: absolute;
+        width: 640px;
+        height: 480px;
+        top: 0px;
+        left: 0px;
+    }
+
+    #svg text {
+        font-family: $m8-font;
+        font-size: 16px;
+    }
+
+    #buttons {
+        position: relative;
+        top: 25px;
+        text-align: center;
+
+    }
+
+    .error {
+        position: absolute;
+        top: 100px;
+        left: 100px;
+        right: 100px;
+        border: 3px solid #fff;
+        border-radius: 10px;
+        padding: 20px;
+        background-color: #a22;
+        user-select: text;
+
+        p {
+            margin-top: 0;
         }
 
-        &:focus {
-            border-style: dashed;
-            outline: 0;
+        p:last-child {
+            margin-bottom: 0;
         }
     }
-  }
-
-  .error {
-    position: absolute;
-    top: 100px;
-    left: 100px;
-    right: 100px;
-    border: 3px solid #fff;
-    border-radius: 10px;
-    padding: 20px;
-    background-color: #a22;
-    user-select: text;
-
-    p {
-        margin-top: 0;
-    }
-
-    p:last-child {
-        margin-bottom: 0;
-    }
-  }
 }
 
 #controls {
-  position: relative;
-  width: 640px;
-  margin: 0 auto;
+    position: relative;
+    width: 640px;
+    margin: 0 auto;
 
-  rect {
-    fill: #333;
-    rx: 10px;
-    stroke: #aaa;
-    stroke-width: 3px;
-  }
+    rect {
+        fill: #333;
+        rx: 10px;
+        stroke: #aaa;
+        stroke-width: 3px;
+    }
 }
 
 #reload {
@@ -112,21 +162,82 @@ a, a:visited {
     text-align: center;
 
     button {
-        border: 3px solid #fff;
-        border-radius: 10px 10px 0 0;
         border-bottom-width: 0;
-        padding: 20px;
-        background-color: #55a;
-        color: #fff;
-        font-size: 16px;
+    }
+}
 
-        &:active {
-            background-color: #338;
+#settings {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    user-select: none;
+
+    &.hidden {
+        display: block;
+        width: 0;
+        height: 0;
+
+        .setting {
+            display: none;
         }
 
-        &:focus {
-            border-style: dashed;
-            outline: 0;
+        .control {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23fff' stroke-width='1.5' d='M2 4h12M2 8h12M2 12h12'/%3e%3c/svg%3e");
+        }
+    }
+
+    .control {
+        width: 32px;
+        height: 32px;
+        margin: 5px;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23fff' stroke-width='1.5' d='M3 3l10 10M3 13l10-10'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        cursor: pointer;
+    }
+
+
+    .setting {
+        display: block;
+        width: 320px;
+        border: 3px solid #fff;
+        border-width: 3px 3px 0 0;
+
+        &:last-child {
+            border-bottom-width: 3px;
+        }
+
+        label {
+            display: block;
+            position: relative;
+            padding: 10px;
+
+            input, select {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                right: 0;
+                margin: 0;
+                border: 0;
+            }
+
+            input[type=checkbox] {
+                padding: 10px;
+            }
+
+            select {
+                width: 50%;
+            }
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            margin: 0;
+            border: 0;
+            padding: 10px;
         }
     }
 }

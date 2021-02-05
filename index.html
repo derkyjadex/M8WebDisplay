@@ -57,6 +57,60 @@
         </svg>
     </div>
 
+
+    <div id="settings" class="hidden">
+        <div class="control"></div>
+        <div class="setting">
+            <label>
+                Show Controls
+                <input type="checkbox" id="show-controls-setting">
+            </label>
+        </div>
+        <div class="setting">
+            <label>
+                Expand View
+                <input type="checkbox" id="expand-view-setting">
+            </label>
+        </div>
+        <div class="setting">
+            <label>
+                Enable Audio
+                <input type="checkbox" id="enable-audio-setting">
+            </label>
+        </div>
+        <div class="setting">
+            <label>
+                Audio Input
+                <select id="audio-input-setting" disabled>
+                    <option>None available</option>
+                </select>
+            </label>
+        </div>
+        <div class="setting">
+            <label>
+                Audio Output
+                <select id="audio-output-setting" disabled>
+                    <option>None available</option>
+                </select>
+            </label>
+        </div>
+        <div class="setting">
+            <label>
+                Display Type
+                <select id="display-setting-setting">
+                    <option value="webgl2">WebGL2</option>
+                    <option value="old">Canvas + SVG</option>
+                </select>
+            </label>
+        </div>
+        <div class="setting">
+            <button id="open-keyboard-mapping">Keyboard Mapping</button>
+        </div>
+        <div class="setting">
+            <button id="open-gamepad-mapping">Gamepad Mapping</button>
+        </div>
+    </div>
+
     <div id="reload" class="hidden">
         <button>An update is available. Click to reload.</button>
     </div>

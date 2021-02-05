@@ -10,6 +10,14 @@ export function hide(query) {
         .forEach(e => e.classList.add('hidden'));
 }
 
+export function toggle(query) {
+    document
+        .querySelectorAll(query)
+        .forEach(e => e.classList.contains('hidden')
+            ? e.classList.remove('hidden')
+            : e.classList.add('hidden'));
+}
+
 export function wait(time) {
     return new Promise(resolve => setTimeout(resolve, time));
 };

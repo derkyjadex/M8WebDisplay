@@ -2,7 +2,7 @@ import { UsbConnection } from './usb.js';
 import { SerialConnection } from './serial.js';
 import { Parser } from './parser.js';
 import { Renderer } from './renderer.js';
-import { show, hide } from './util.js';
+import { show, hide, toggle } from './util.js';
 import { setup as setupWorker } from './worker-setup.js';
 
 import * as Input from './input.js';
@@ -57,5 +57,17 @@ if (navigator.serial) {
 } else {
     document.getElementById('no-serial-usb').classList.remove('hidden');
 }
+
+document
+    .querySelector('#settings .control')
+    .addEventListener('click', e => toggle('#settings'));
+
+document
+    .querySelector('#settings')
+    .addEventListener('click', e => {
+        if (e.target.id === 'settings') {
+            hide('#settings');
+        }
+    });
 
 setupWorker();
