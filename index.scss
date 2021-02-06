@@ -63,11 +63,11 @@ input[type=checkbox] {
     font-family: $m8-font;
 
     &::after {
-        content: 'ON';
+        content: 'OFF';
     }
 
     &:checked::after {
-        content: 'OFF';
+        content: 'ON';
     }
 }
 
@@ -166,6 +166,8 @@ select {
     }
 }
 
+$menu-time: 80ms;
+
 #settings {
     position: fixed;
     top: 0;
@@ -173,15 +175,19 @@ select {
     left: 0;
     right: 0;
     background-color: rgba(0, 0, 0, 0.5);
+    transition: background-color $menu-time linear 0s;
     user-select: none;
 
     &.hidden {
         display: block;
         width: 0;
         height: 0;
+        background-color: rgba(0, 0, 0, 0);
 
         .setting {
-            display: none;
+            visibility: hidden;
+            margin-left: -323px;
+            transition: none;
         }
 
         .control {
@@ -192,18 +198,43 @@ select {
     .control {
         width: 32px;
         height: 32px;
-        margin: 5px;
         background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23fff' stroke-width='1.5' d='M3 3l10 10M3 13l10-10'/%3e%3c/svg%3e");
         background-repeat: no-repeat;
-        cursor: pointer;
+        background-color: transparent;
+        border-color: transparent;
+        font-size: 0;
+        margin-bottom: -3px;
+
+        &:hover {
+            background-color: $m8;
+        }
+
+        &:active {
+            background-color: darken($m8, 10%);
+            color: #fff;
+        }
+
+        &:focus {
+            color: $m8;
+            border-color: $m8;
+
+            &:hover {
+                color: #000;
+            }
+
+            &:active {
+                color: #fff;
+            }
+        }
     }
 
 
     .setting {
-        display: block;
         width: 320px;
         border: 3px solid #fff;
         border-width: 3px 3px 0 0;
+        margin-left: 0;
+        transition: margin-left $menu-time linear 0s;
 
         &:last-child {
             border-bottom-width: 3px;

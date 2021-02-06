@@ -7,6 +7,7 @@ import { setup as setupWorker } from './worker-setup.js';
 
 import * as Input from './input.js';
 import * as Audio from './audio.js';
+import * as Settings from './settings.js';
 
 const renderer = new Renderer();
 const parser = new Parser(renderer);
@@ -57,17 +58,5 @@ if (navigator.serial) {
 } else {
     document.getElementById('no-serial-usb').classList.remove('hidden');
 }
-
-document
-    .querySelector('#settings .control')
-    .addEventListener('click', e => toggle('#settings'));
-
-document
-    .querySelector('#settings')
-    .addEventListener('click', e => {
-        if (e.target.id === 'settings') {
-            hide('#settings');
-        }
-    });
 
 setupWorker();
