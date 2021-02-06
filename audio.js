@@ -1,9 +1,10 @@
 import { wait } from './util.js';
 
 let ctx;
+let enabled = true;
 
 export async function start(attempts = 1) {
-    if (ctx)
+    if (ctx || !enabled)
         return;
 
     try {
@@ -45,6 +46,10 @@ export async function start(attempts = 1) {
         console.error(err);
         stop();
     }
+
+    if (!enabled) {
+        stop();
+    }
 }
 
 async function findDeviceId() {
@@ -67,11 +72,24 @@ function waitForUserGesture() {
     const events = ['keydown', 'mousedown', 'touchstart'];
 
     function resume() {
-        ctx.resume();
+        ctx && ctx.resume();
         events.forEach(e =>
             document.removeEventListener(e, resume));
     }
 
     events.forEach(e =>
         document.addEventListener(e, resume));
+}
+
+export function enable() {
+    if (enabled)
+        return;
+
+    enabled = true;
+    start();
+}
+
+export function disable() {
+    enabled = false;
+    stop();
 }
