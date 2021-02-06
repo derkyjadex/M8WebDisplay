@@ -21,6 +21,7 @@ export class Renderer {
     _buildText() {
         const xmlns = 'http://www.w3.org/2000/svg';
         const svg = document.createElementNS(xmlns, 'svg');
+        svg.setAttributeNS(null, 'viewBox', '0 0 640 480');
 
         while (svg.firstChild) {
             svg.removeChild(svg.lastChild);

@@ -16,9 +16,6 @@ export class Renderer {
             antialias: false
         });
 
-        this._canvas.addEventListener('dblclick', () =>
-            this._canvas.requestFullscreen());
-
         const gl = this._gl;
 
         this._setupRects(gl);
@@ -113,9 +110,7 @@ export class Renderer {
 
     drawRect(x, y, w, h, r, g, b) {
         if (x === 0 && y === 0 && w === 320 && h === 240) {
-            const cssColour = `rgb(${r}, ${g}, ${b})`
-            this._canvas.style.backgroundColor = cssColour;
-            document.body.style.backgroundColor =  cssColour;
+            document.body.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
 
             this._bg = [r / 255, g / 255, b / 255];
             this._rectCount = 0;

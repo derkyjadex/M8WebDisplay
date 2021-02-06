@@ -30,6 +30,14 @@ function updateDisplay(isConnected) {
     }
 }
 
+const display = document.getElementById('display');
+function goFullscreen() {
+    document.body.requestFullscreen();
+}
+
+display.addEventListener('dblclick', goFullscreen);
+Settings.setOnFullscreen(goFullscreen);
+
 if (navigator.serial) {
     const connection = new SerialConnection(parser, updateDisplay);
     Input.setup(connection);

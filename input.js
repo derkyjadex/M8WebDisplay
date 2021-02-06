@@ -33,6 +33,10 @@ function updateKeys(key, isDown, e) {
     if (bit === undefined)
         return;
 
+    if (e.target.tagName === 'rect') {
+        e.target.classList.toggle('active', isDown);
+    }
+
     const newState = isDown
         ? keyState | (1 << bit)
         : keyState & ~(1 << bit);
