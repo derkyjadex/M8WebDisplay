@@ -1,7 +1,8 @@
 import { UsbConnection } from './usb.js';
 import { SerialConnection } from './serial.js';
 import { Parser } from './parser.js';
-import { Renderer } from './renderer.js';
+import { Renderer as OldRenderer } from './renderer.js';
+import { Renderer as GlRenderer } from './gl-renderer.js';
 import { show, hide, toggle } from './util.js';
 import { setup as setupWorker } from './worker-setup.js';
 
@@ -9,7 +10,10 @@ import * as Input from './input.js';
 import * as Audio from './audio.js';
 import * as Settings from './settings.js';
 
-const renderer = new Renderer();
+const renderer = Settings.displayType === 'webgl2'
+    ? new GlRenderer()
+    : new OldRenderer();
+
 const parser = new Parser(renderer);
 
 function updateDisplay(isConnected) {

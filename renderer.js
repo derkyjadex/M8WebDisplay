@@ -1,6 +1,6 @@
 export class Renderer {
-    _canvas = document.getElementById('canvas');
-    _ctx = canvas.getContext('2d');
+    _canvas;
+    _ctx;
     _textNodes = [];
     _backgroundColour = 'rgb(0, 0, 0)';
 
@@ -12,12 +12,15 @@ export class Renderer {
     _textUpdates = {};
 
     constructor() {
+        this._canvas = document.getElementById('canvas');
+        this._ctx = canvas.getContext('2d');
+
         this._buildText();
     }
 
     _buildText() {
         const xmlns = 'http://www.w3.org/2000/svg';
-        const svg = document.getElementById('svg');
+        const svg = document.createElementNS(xmlns, 'svg');
 
         while (svg.firstChild) {
             svg.removeChild(svg.lastChild);
@@ -40,6 +43,8 @@ export class Renderer {
                 };
             }
         }
+
+        this._canvas.insertAdjacentElement('afterend', svg);
     }
 
     _renderFrame() {

@@ -10,7 +10,6 @@ export class Renderer {
     _frameQueued = false;
 
     constructor() {
-        document.getElementById('svg').remove();
         this._canvas = document.getElementById('canvas')
         this._gl = this._canvas.getContext('webgl2', {
             alpha: false,

@@ -21,7 +21,6 @@
 
     <div id="display">
         <canvas id="canvas" width="320" height="240"></canvas>
-        <svg id="svg" width="320" height="240"></svg>
 
         <div id="serial-fail" class="error hidden">
             <p>Failed to connect over Serial.
@@ -97,15 +96,17 @@
                 </select>
             </label>
         </div>
+        -->
         <div class="setting">
             <label>
                 Display Type
-                <select id="display-setting-setting">
+                <select id="display-type-setting">
                     <option value="webgl2">WebGL2</option>
                     <option value="old">Canvas + SVG</option>
                 </select>
             </label>
         </div>
+        <!--
         <div class="setting">
             <button id="open-keyboard-mapping">Keyboard Mapping</button>
         </div>

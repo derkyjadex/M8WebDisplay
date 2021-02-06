@@ -27,16 +27,24 @@ setupToggle(
     () => Audio.enable(),
     () => Audio.disable());
 
+export let displayType;
+
+setupSelect(
+    'display-type-setting',
+    'displayType',
+    'old',
+    type => { displayType = type; });
+
 function setupToggle(id, setting, defaultValue, onAction, offAction) {
     const element = document.getElementById(id);
 
     element.addEventListener('change', () => {
         if (element.checked) {
             onAction();
-            localStorage[setting] = true;
+            save(setting, true);
         } else {
             offAction();
-            localStorage[setting] = false;
+            save(setting, false);
         }
     });
 
@@ -49,7 +57,24 @@ function setupToggle(id, setting, defaultValue, onAction, offAction) {
     }
 }
 
+function setupSelect(id, setting, defaultValue, action) {
+    const element = document.getElementById(id);
+
+    element.addEventListener('change', () => {
+        action(element.value);
+        save(setting, element.value);
+    });
+
+    const value = get(setting, defaultValue);
+    element.value = value;
+    action(value);
+}
+
 function get(setting, defaultValue) {
     const value = localStorage[setting];
     return value === undefined ? defaultValue : JSON.parse(value);
+}
+
+function save(setting, value) {
+    localStorage[setting] = JSON.stringify(value);
 }

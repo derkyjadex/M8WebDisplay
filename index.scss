@@ -100,7 +100,7 @@ select {
         image-rendering: pixelated;
     }
 
-    canvas, #svg {
+    canvas, svg {
         position: absolute;
         width: 640px;
         height: 480px;
@@ -108,7 +108,7 @@ select {
         left: 0px;
     }
 
-    #svg text {
+    svg text {
         font-family: $m8-font;
         font-size: 16px;
     }
