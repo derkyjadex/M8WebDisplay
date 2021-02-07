@@ -1,8 +1,7 @@
 import { show, hide, toggle } from './util.js';
-import * as Audio from './audio.js';
 
 document
-    .querySelector('#settings .control')
+    .getElementById('menu-button')
     .addEventListener('click', e => toggle('#settings'));
 
 document
@@ -13,91 +12,107 @@ document
         }
     });
 
-setupToggle(
-    'show-controls-setting',
-    'showControls',
-    true,
-    value => document
-        .getElementById('display')
-        .classList
-        .toggle('with-controls', value));
+const actions = {};
+const values = {};
 
-setupToggle(
-    'enable-audio-setting',
-    'enableAudio',
-    true,
-    value => {
-        if (value) { Audio.enable(); }
-        else { Audio.disable(); }
-    });
-
-export let displayType;
+setupToggle('showControls', 'Show Controls', true);
+setupToggle('enableAudio', 'Enable Audio', true);
 
 setupSelect(
-    'display-type-setting',
     'displayType',
-    'webgl2',
-    type => { displayType = type; });
+    'Display Type',
+    { webgl2: 'WebGL2', old: 'Canvas + SVG' },
+    'webgl2');
 
-let onFullscreen;
+setupButton('fullscreen', 'Fullscreen');
 
-export function setOnFullscreen(action) {
-    onFullscreen = action;
+function setupToggle(setting, title, defaultValue) {
+    const value = load(setting, defaultValue);
+
+    const div = document.createElement('div');
+    div.classList.add('setting');
+    const label = document.createElement('label');
+    label.innerText = title;
+    div.append(label);
+    const input = document.createElement('input');
+    input.setAttribute('type', 'checkbox');
+    input.checked = value;
+    label.append(input);
+
+    input.addEventListener('change', () =>
+        save(setting, input.checked));
+
+    document
+        .getElementById('settings')
+        .append(div);
 }
 
-setupButton(
-    'go-fullscreen',
-    () => {
+function setupSelect(setting, title, options, defaultValue) {
+    const value = load(setting, defaultValue);
+
+    const div = document.createElement('div');
+    div.classList.add('setting');
+    const label = document.createElement('label');
+    label.innerText = title;
+    div.append(label);
+    const select = document.createElement('select');
+
+    for (const [value, title] of Object.entries(options)) {
+        const option = document.createElement('option');
+        option.value = value;
+        option.text = title;
+        select.append(option);
+    }
+    select.value = value;
+
+    label.append(select);
+
+    select.addEventListener('change', () =>
+        save(setting, select.value));
+
+    document
+        .getElementById('settings')
+        .append(div);
+}
+
+function setupButton(setting, title) {
+    const div = document.createElement('div');
+    div.classList.add('setting');
+    const button = document.createElement('button');
+    button.innerText = title;
+    div.append(button);
+
+    button.addEventListener('click', () => {
         hide('#settings');
-        if (document.fullscreenElement) {
-            document.exitFullscreen();
-        } else if (onFullscreen) {
-            onFullscreen();
-        }
+        actions[setting] && actions[setting]();
     });
 
-function setupToggle(id, setting, defaultValue, action) {
-    const element = document.getElementById(id);
-
-    element.addEventListener('change', () => {
-        if (element.checked) {
-            action(true);
-            save(setting, true);
-        } else {
-            action(false);
-            save(setting, false);
-        }
-    });
-
-    const value = get(setting, defaultValue);
-    element.checked = value;
-    action(value);
+    document
+        .getElementById('settings')
+        .append(div);
 }
 
-function setupSelect(id, setting, defaultValue, action) {
-    const element = document.getElementById(id);
+export function load(setting, defaultValue) {
+    let value = localStorage[setting];
+    value = value === undefined ? defaultValue : JSON.parse(value);
+    values[setting] = value;
 
-    element.addEventListener('change', () => {
-        action(element.value);
-        save(setting, element.value);
-    });
-
-    const value = get(setting, defaultValue);
-    element.value = value;
-    action(value);
+    return value;
 }
 
-function setupButton(id, action) {
-    const element = document.getElementById(id);
-
-    element.addEventListener('click', () => { action(); });
-}
-
-function get(setting, defaultValue) {
-    const value = localStorage[setting];
-    return value === undefined ? defaultValue : JSON.parse(value);
-}
-
-function save(setting, value) {
+export function save(setting, value) {
+    values[setting] = value;
+    actions[setting] && actions[setting](value);
     localStorage[setting] = JSON.stringify(value);
+}
+
+export function on(setting, action) {
+    actions[setting] = action;
+    if (get(setting) !== undefined) {
+        action(get(setting));
+    }
+}
+
+export function get(setting) {
+    return values[setting];
 }

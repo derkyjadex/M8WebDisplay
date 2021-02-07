@@ -10,8 +10,6 @@
     <link rel="shortcut icon" type="image/png" href="icon.png">
     <link rel="manifest" href="app.webmanifest">
     <link rel="stylesheet" href="build/index.css">
-    <style>
-    </style>
 </head>
 <body>
     <div id="display">
@@ -50,65 +48,7 @@
     </div>
 
     <div id="settings" class="hidden">
-        <button class="control">Menu</button>
-        <div class="setting">
-            <label>
-                Show Controls
-                <input type="checkbox" id="show-controls-setting">
-            </label>
-        </div>
-        <!--
-        <div class="setting">
-            <label>
-                Expand View
-                <input type="checkbox" id="expand-view-setting">
-            </label>
-        </div>
-        -->
-        <div class="setting">
-            <label>
-                Enable Audio
-                <input type="checkbox" id="enable-audio-setting">
-            </label>
-        </div>
-        <!--
-        <div class="setting">
-            <label>
-                Audio Input
-                <select id="audio-input-setting" disabled>
-                    <option>None available</option>
-                </select>
-            </label>
-        </div>
-        <div class="setting">
-            <label>
-                Audio Output
-                <select id="audio-output-setting" disabled>
-                    <option>None available</option>
-                </select>
-            </label>
-        </div>
-        -->
-        <div class="setting">
-            <label>
-                Display Type
-                <select id="display-type-setting">
-                    <option value="webgl2">WebGL2</option>
-                    <option value="old">Canvas + SVG</option>
-                </select>
-            </label>
-        </div>
-        <!--
-        <div class="setting">
-            <button id="open-keyboard-mapping">Keyboard Mapping</button>
-        </div>
-        <div class="setting">
-            <button id="open-gamepad-mapping">Gamepad Mapping</button>
-        </div>
-        -->
-        <div class="setting">
-            <button id="go-fullscreen">Fullscreen</button>
-        </div>
+        <button id="menu-button">Menu</button>
     </div>
 
     <div id="info">

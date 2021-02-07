@@ -10,48 +10,51 @@ import * as Input from './input.js';
 import * as Audio from './audio.js';
 import * as Settings from './settings.js';
 
-function onBackgroundChanged(r, g, b) {
+function setBackground(r, g, b) {
     const colour = `rgb(${r}, ${g}, ${b})`;
     document.body.style.backgroundColor = colour;
     document.documentElement.style.backgroundColor = colour;
-    localStorage.background = JSON.stringify([r, g, b]);
+    Settings.save('background', [r, g, b]);
 }
-let bg;
-if (localStorage.background) {
-    bg = JSON.parse(localStorage.background);
-    onBackgroundChanged(bg[0], bg[1], bg[2]);
-} else {
-    bg = [0, 0, 0];
-}
-
-const renderer = Settings.displayType === 'webgl2'
-    ? new GlRenderer(bg, onBackgroundChanged)
-    : new OldRenderer(bg, onBackgroundChanged);
+const bg = Settings.load('background', [0, 0, 0]);
+setBackground(bg[0], bg[1], bg[2]);
+const renderer = Settings.get('displayType') === 'webgl2'
+    ? new GlRenderer(bg, setBackground)
+    : new OldRenderer(bg, setBackground);
 
 const parser = new Parser(renderer);
+
+Settings.on('showControls', value => {
+    document
+        .getElementById('display')
+        .classList
+        .toggle('with-controls', value);
+});
+
+Settings.on('enableAudio', value => {
+    if (value) { Audio.enable(); }
+    else { Audio.disable(); }
+});
+
+Settings.on('fullscreen', () => {
+    if (document.fullscreenElement) {
+        document.exitFullscreen();
+    } else {
+        document.body.requestFullscreen();
+    }
+});
 
 function updateDisplay(isConnected) {
     if (isConnected) {
         hide('#buttons, #display .error');
-
         Audio.start(10);
 
     } else {
         renderer.clear();
         show('#buttons');
-
         Audio.stop();
     }
 }
-
-function goFullscreen() {
-    document.body.requestFullscreen();
-}
-
-document
-    .getElementById('display')
-    .addEventListener('dblclick', goFullscreen);
-Settings.setOnFullscreen(goFullscreen);
 
 if (navigator.serial) {
     const connection = new SerialConnection(parser, updateDisplay);
@@ -83,7 +86,7 @@ if (navigator.serial) {
     show('#buttons');
 
 } else {
-    document.getElementById('no-serial-usb').classList.remove('hidden');
+    show('#no-serial-usb');
 }
 
 setupWorker();
