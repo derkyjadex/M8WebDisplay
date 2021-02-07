@@ -12,7 +12,7 @@ const keyBitMap = {
     edit: 0
 };
 
-const keyMap = {
+const inputMap = {
     ArrowUp: 'up',
     ArrowDown: 'down',
     ArrowLeft: 'left',
@@ -20,34 +20,47 @@ const keyMap = {
     ShiftLeft: 'select',
     Space: 'start',
     KeyZ: 'option',
-    KeyX: 'edit'
+    KeyX: 'edit',
+
+    Gamepad12: 'up',
+    Gamepad64: 'up',
+    Gamepad13: 'down',
+    Gamepad65: 'down',
+    Gamepad14: 'left',
+    Gamepad66: 'left',
+    Gamepad15: 'right',
+    Gamepad67: 'right',
+    Gamepad8: 'select',
+    Gamepad2: 'select',
+    Gamepad5: 'select',
+    Gamepad9: 'start',
+    Gamepad3: 'start',
+    Gamepad1: 'option',
+    Gamepad0: 'edit'
 };
 
-const buttonMap = {
-    12: 'up',
-    64: 'up',
-    13: 'down',
-    65: 'down',
-    14: 'left',
-    66: 'left',
-    15: 'right',
-    67: 'right',
-    8: 'select',
-    2: 'select',
-    5: 'select',
-    9: 'start',
-    3: 'start',
-    1: 'option',
-    0: 'edit'
-};
+function handleInput(input, isDown, e) {
+    if (!input)
+        return;
 
-function updateKeys(key, isDown, e) {
-    if (!key)
+    if (isCapturing()) {
+        e && e.preventDefault();
+        if (isDown) {
+            resolveCapture(input);
+        }
+        return;
+    }
+
+    handleAction(inputMap[input], isDown, e);
+}
+
+function handleAction(action, isDown, e) {
+    if (!action)
         return;
 
     e && e.preventDefault();
 
-    const bit = keyBitMap[key];
+    const bit = keyBitMap[action];
     if (bit === undefined)
         return;
 
@@ -71,24 +84,24 @@ export function setup(connection_) {
     connection = connection_;
 
     document.addEventListener('keydown', e =>
-        updateKeys(keyMap[e.code], true, e));
+        handleInput(e.code, true, e));
 
     document.addEventListener('keyup', e =>
-        updateKeys(keyMap[e.code], false, e));
+        handleInput(e.code, false, e));
 
     const controls = document.getElementById('controls');
 
     controls.addEventListener('mousedown', e =>
-        updateKeys(e.target.dataset.key, true, e));
+        handleAction(e.target.dataset.key, true, e));
 
     controls.addEventListener('touchstart', e =>
-        updateKeys(e.target.dataset.key, true, e));
+        handleAction(e.target.dataset.key, true, e));
 
     controls.addEventListener('mouseup', e =>
-        updateKeys(e.target.dataset.key, false, e));
+        handleAction(e.target.dataset.key, false, e));
 
     controls.addEventListener('touchend', e =>
-        updateKeys(e.target.dataset.key, false, e));
+        handleAction(e.target.dataset.key, false, e));
 }
 
 let gamepadsRunning = false;
@@ -148,7 +161,7 @@ function pollGamepads() {
                     const pressed = hatPosition[b];
                     if (state.buttons[64 + b] !== pressed) {
                         state.buttons[64 + b] = pressed;
-                        updateKeys(buttonMap[64 + b], pressed);
+                        handleInput(`Gamepad${64 + b}`, pressed);
                     }
                 }
             }
@@ -158,7 +171,7 @@ function pollGamepads() {
             const pressed = gamepad.buttons[i].pressed;
             if (state.buttons[i] !== pressed) {
                 state.buttons[i] = pressed;
-                updateKeys(buttonMap[i], pressed);
+                handleInput(`Gamepad${i}`, pressed);
             }
         }
     }
@@ -184,3 +197,45 @@ window.addEventListener('gamepadconnected', e => {
 window.addEventListener('gamepaddisconnected', e => {
     gamepadStates[e.gamepad.index] = null;
 });
+
+let resolveCapturePromise;
+
+export function captureNextInput() {
+    return new Promise(resolve => {
+        resolveCapturePromise = resolve;
+    });
+}
+
+function isCapturing() {
+    return !!resolveCapturePromise;
+}
+
+function resolveCapture(input) {
+    const resolve = resolveCapturePromise;
+    resolveCapturePromise = null;
+    resolve && resolve(input);
+}
+
+export function cancelCapture() {
+    resolveCapture(null);
+}
+
+export function getMappings() {
+    return Object
+        .entries(inputMap)
+        .map(([input, action]) => ({ input, action }));
+}
+
+export function addMapping(input, action) {
+    inputMap[input] = action;
+}
+
+export function removeMapping(input) {
+    delete inputMap[input];
+}
+
+export function clearMappings() {
+    for (const [input, _] of Object.entries(inputMap)) {
+        delete inputMap[input];
+    }
+}
