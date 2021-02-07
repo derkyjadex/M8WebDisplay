@@ -24,17 +24,75 @@ const renderer = Settings.get('displayType') === 'webgl2'
 
 const parser = new Parser(renderer);
 
+let resizeCanvas = (function() {
+    const display = document.getElementById('display');
+    const canvas = document.getElementById('canvas');
+    const svg = document.querySelector('#canvas + svg');
+
+    function resize() {
+        const ratio = devicePixelRatio;
+        const dW = display.clientWidth * ratio;
+
+        if (Settings.get('snapPixels') && dW <= 1600) {
+            let dH = display.clientHeight * ratio;
+            if (Settings.get('showControls')) {
+                dH /= 2;
+            }
+
+            const width = Math.floor(dW / 320) * 320 / ratio;
+            const height = Math.floor(dH / 240) * 240 / ratio;
+            const left = Math.round((dW / ratio - width) / 2);
+            const top = Math.round((dH / ratio - height) / 2);
+
+            canvas.style.width = `${width}px`;
+            canvas.style.height = `${height}px`;
+            canvas.style.left = `${left}px`;
+            canvas.style.top = `${top}px`;
+
+            if (svg) {
+                svg.style.width = `${width}px`;
+                svg.style.height = `${height}px`;
+                svg.style.left = `${left}px`;
+                svg.style.top = `${top}px`;
+            }
+        } else {
+            canvas.style.width = null;
+            canvas.style.height = null;
+            canvas.style.left = null;
+            canvas.style.top = null;
+
+            if (svg) {
+                svg.style.width = null;
+                svg.style.height = null;
+                svg.style.left = null;
+                svg.style.top = null;
+            }
+        }
+    }
+
+    window.addEventListener('resize', resize);
+    window.matchMedia('screen and (min-resolution: 2dppx)')
+        .addListener(resize);
+
+    resize();
+
+    return resize;
+})();
+
 Settings.on('showControls', value => {
     document
         .getElementById('display')
         .classList
         .toggle('with-controls', value);
+    resizeCanvas();
 });
 
 Settings.on('enableAudio', value => {
     if (value) { Audio.enable(); }
     else { Audio.disable(); }
 });
+
+Settings.on('snapPixels', () => resizeCanvas());
 
 Settings.on('fullscreen', () => {
     if (document.fullscreenElement) {

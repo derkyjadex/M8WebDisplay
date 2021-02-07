@@ -24,6 +24,8 @@ setupSelect(
     { webgl2: 'WebGL2', old: 'Canvas + SVG' },
     'webgl2');
 
+setupToggle('snapPixels', 'Snap Pixels', true);
+
 setupButton('fullscreen', 'Fullscreen');
 
 function setupToggle(setting, title, defaultValue) {
