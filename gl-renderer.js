@@ -9,7 +9,12 @@ export class Renderer {
     _bg = [0, 0, 0];
     _frameQueued = false;
 
-    constructor() {
+    _onBackgroundChanged;
+
+    constructor(bg, onBackgroundChanged) {
+        this._bg = [bg[0] / 255, bg[1] / 255, bg[2] / 255];
+        this._onBackgroundChanged = onBackgroundChanged;
+
         this._canvas = document.getElementById('canvas')
         this._gl = this._canvas.getContext('webgl2', {
             alpha: false,
@@ -110,7 +115,7 @@ export class Renderer {
 
     drawRect(x, y, w, h, r, g, b) {
         if (x === 0 && y === 0 && w === 320 && h === 240) {
-            document.body.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+            this._onBackgroundChanged(r, g, b);
 
             this._bg = [r / 255, g / 255, b / 255];
             this._rectCount = 0;

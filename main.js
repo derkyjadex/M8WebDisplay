@@ -10,9 +10,23 @@ import * as Input from './input.js';
 import * as Audio from './audio.js';
 import * as Settings from './settings.js';
 
+function onBackgroundChanged(r, g, b) {
+    const colour = `rgb(${r}, ${g}, ${b})`;
+    document.body.style.backgroundColor = colour;
+    document.documentElement.style.backgroundColor = colour;
+    localStorage.background = JSON.stringify([r, g, b]);
+}
+let bg;
+if (localStorage.background) {
+    bg = JSON.parse(localStorage.background);
+    onBackgroundChanged(bg[0], bg[1], bg[2]);
+} else {
+    bg = [0, 0, 0];
+}
+
 const renderer = Settings.displayType === 'webgl2'
-    ? new GlRenderer()
-    : new OldRenderer();
+    ? new GlRenderer(bg, onBackgroundChanged)
+    : new OldRenderer(bg, onBackgroundChanged);
 
 const parser = new Parser(renderer);
 
@@ -30,12 +44,13 @@ function updateDisplay(isConnected) {
     }
 }
 
-const display = document.getElementById('display');
 function goFullscreen() {
     document.body.requestFullscreen();
 }
 
-display.addEventListener('dblclick', goFullscreen);
+document
+    .getElementById('display')
+    .addEventListener('dblclick', goFullscreen);
 Settings.setOnFullscreen(goFullscreen);
 
 if (navigator.serial) {

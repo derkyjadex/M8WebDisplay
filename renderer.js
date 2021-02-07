@@ -11,7 +11,11 @@ export class Renderer {
     _waveOn = false;
     _textUpdates = {};
 
-    constructor() {
+    _onBackgroundChanged;
+
+    constructor(bg, onBackgroundChanged) {
+        this._backgroundColour = `rgb(${bg[0]}, ${bg[1]}, ${bg[2]})`;
+        this._onBackgroundChanged = onBackgroundChanged;
         this._canvas = document.getElementById('canvas');
         this._ctx = canvas.getContext('2d');
 
@@ -98,7 +102,7 @@ export class Renderer {
         if (x === 0 && y === 0 && w === 320 && h === 240) {
             this._rects.length = 0;
             this._backgroundColour = colour;
-            document.body.style.backgroundColor = colour;
+            this._onBackgroundChanged(r, g, b);
         }
 
         this._rects.push({ colour, x, y, w, h });
