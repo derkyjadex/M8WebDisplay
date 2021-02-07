@@ -23,17 +23,31 @@ const keyMap = {
     KeyX: 'edit'
 };
 
+const buttonMap = {
+    12: 'up',
+    13: 'down',
+    14: 'left',
+    15: 'right',
+    8: 'select',
+    2: 'select',
+    5: 'select',
+    9: 'start',
+    3: 'start',
+    1: 'option',
+    0: 'edit'
+};
+
 function updateKeys(key, isDown, e) {
     if (!key)
         return;
 
-    e.preventDefault();
+    e && e.preventDefault();
 
     const bit = keyBitMap[key];
     if (bit === undefined)
         return;
 
-    if (e.target.tagName === 'rect') {
+    if (e && e.target.tagName === 'rect') {
         e.target.classList.toggle('active', isDown);
     }
 
@@ -73,3 +87,57 @@ export function setup(connection_) {
         updateKeys(e.target.dataset.key, false, e));
 }
 
+const gamepadStates = [];
+let gamepadsRunning = false;
+
+function pollGamepads() {
+    if (!gamepadsRunning)
+        return;
+
+    let somethingPresent = false;
+    for (const gamepad of navigator.getGamepads()) {
+        if (!gamepad || !gamepad.connected)
+            continue;
+
+        if (gamepad.mapping !== 'standard')
+            continue;
+
+        somethingPresent = true;
+
+        let states = gamepadStates[gamepad.index];
+        if (!states) {
+            states = gamepadStates[gamepad.index] = [];
+        }
+
+        const buttons = gamepad.buttons;
+        for (let i = 0; i < buttons.length; i++) {
+            const state = buttons[i].pressed;
+            if (states[i] !== state) {
+                states[i] = state;
+                updateKeys(buttonMap[i], state);
+            }
+        }
+    }
+
+    if (somethingPresent) {
+        requestAnimationFrame(pollGamepads);
+    } else {
+        gamepadsRunning = false;
+    }
+}
+
+window.addEventListener('gamepadconnected', e => {
+    if (e.gamepad.mapping !== 'standard') {
+        console.warn('Non-standard gamepad attached. Don\'t know how to map.');
+        return;
+    }
+
+    if (!gamepadsRunning) {
+        gamepadsRunning = true;
+        pollGamepads();
+    }
+});
+
+window.addEventListener('gamepaddisconnected', e => {
+    gamepadStates[e.gamepad.index] = null;
+});
