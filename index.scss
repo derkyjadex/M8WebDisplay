@@ -178,6 +178,10 @@ select {
             &.active {
                 stroke: $m8;
             }
+
+            &.mapping {
+                stroke: #e30;
+            }
         }
     }
 }

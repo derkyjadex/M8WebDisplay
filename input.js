@@ -64,10 +64,6 @@ function handleAction(action, isDown, e) {
     if (bit === undefined)
         return;
 
-    if (e && e.target.tagName === 'rect') {
-        e.target.classList.toggle('active', isDown);
-    }
-
     const newState = isDown
         ? keyState | (1 << bit)
         : keyState & ~(1 << bit);
@@ -92,16 +88,38 @@ export function setup(connection_) {
     const controls = document.getElementById('controls');
 
     controls.addEventListener('mousedown', e =>
-        handleAction(e.target.dataset.key, true, e));
+        handleControl(true, e));
 
     controls.addEventListener('touchstart', e =>
-        handleAction(e.target.dataset.key, true, e));
+        handleControl(true, e));
 
     controls.addEventListener('mouseup', e =>
-        handleAction(e.target.dataset.key, false, e));
+        handleControl(false, e));
 
     controls.addEventListener('touchend', e =>
-        handleAction(e.target.dataset.key, false, e));
+        handleControl(false, e));
+
+    async function handleControl(isDown, e) {
+        const action = e.target.dataset.action;
+        if (!action)
+            return;
+
+        if (isDown && isCapturing()) {
+            cancelCapture();
+
+        } else if (isDown && (e.ctrlKey || e.shiftKey || e.metaKey)) {
+            e.target.classList.add('mapping');
+            const input = await captureNextInput();
+            e.target.classList.remove('mapping');
+            if (input) {
+                addMapping(input, action);
+            }
+
+        } else {
+            e.target.classList.toggle('active', isDown);
+            handleAction(action, isDown, e);
+        }
+    }
 }
 
 let gamepadsRunning = false;
@@ -201,6 +219,7 @@ window.addEventListener('gamepaddisconnected', e => {
 let resolveCapturePromise;
 
 export function captureNextInput() {
+    cancelCapture();
     return new Promise(resolve => {
         resolveCapturePromise = resolve;
     });
