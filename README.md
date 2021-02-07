@@ -6,7 +6,7 @@ It runs entirely in the browser and only needs to be hosted on a server to satis
 
 Try it out at https://derkyjadex.github.io/M8WebDisplay/. **Use at your own risk.**
 
-This project is very much at a proof of concept stage. I've implemented the display (without the waveform), keyboard input and audio routing from the M8's output to the default audio device. It needs a bunch of work to make it more robust and probably fix numerous bugs.
+This project is very much at a proof of concept stage. I've implemented the display, keyboard input and audio routing from the M8's output to the default audio device. It needs a bunch of work to make it more robust and probably fix numerous bugs.
 
 ## Supported Platforms
 
@@ -14,6 +14,7 @@ The following should generally work, details are below.
 
 - Chrome on macOS
 - Chrome on Windows, with experimental flag
+- Edge on Windows, with experimental flag
 - Chrome on Linux, with experimental flag
 - Chrome on Android, without audio
 
@@ -25,11 +26,10 @@ The way that that Android handles USB audio devices (such as the M8) prevents us
 
 ## TODO/Ideas
 
-- Selectable audio output device
-- Render everything with WebGL?
-- Custom key mappings
 - Gamepad input
+- Custom key mappings
 - Teensy firmware loader
+- Selectable audio output device
 
 ## Licence
 
