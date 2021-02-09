@@ -1,3 +1,6 @@
+import { appendButton } from './util.js';
+import * as Settings from './settings.js';
+
 let connection;
 let keyState = 0;
 
@@ -12,7 +15,7 @@ const keyBitMap = {
     edit: 0
 };
 
-const inputMap = {
+const defaultInputMap = Object.freeze({
     ArrowUp: 'up',
     ArrowDown: 'down',
     ArrowLeft: 'left',
@@ -37,13 +40,15 @@ const inputMap = {
     Gamepad3: 'start',
     Gamepad1: 'option',
     Gamepad0: 'edit'
-};
+});
+
+const inputMap = {};
 
 function handleInput(input, isDown, e) {
     if (!input)
         return;
 
-    if (isCapturing()) {
+    if (resolveCapture) {
         e && e.preventDefault();
         if (isDown) {
             resolveCapture(input);
@@ -52,6 +57,20 @@ function handleInput(input, isDown, e) {
     }
 
     handleAction(inputMap[input], isDown, e);
+}
+
+function handleControl(isDown, e) {
+    const action = e.target.dataset.action;
+    if (!action)
+        return;
+
+    if (isMapping && isDown && !resolveCapture) {
+        startMapKey(e.target, action);
+
+    } else {
+        e.target.classList.toggle('active', isDown);
+        handleAction(action, isDown, e);
+    }
 }
 
 function handleAction(action, isDown, e) {
@@ -99,27 +118,13 @@ export function setup(connection_) {
     controls.addEventListener('touchend', e =>
         handleControl(false, e));
 
-    async function handleControl(isDown, e) {
-        const action = e.target.dataset.action;
-        if (!action)
-            return;
+    appendButton('#mapping-buttons', 'Reset to Default', resetMappings);
+    appendButton('#mapping-buttons', 'Clear All', clearMappings);
+    appendButton('#mapping-buttons', 'Done', stopMapping);
 
-        if (isDown && isCapturing()) {
-            cancelCapture();
-
-        } else if (isDown && (e.ctrlKey || e.shiftKey || e.metaKey)) {
-            e.target.classList.add('mapping');
-            const input = await captureNextInput();
-            e.target.classList.remove('mapping');
-            if (input) {
-                addMapping(input, action);
-            }
-
-        } else {
-            e.target.classList.toggle('active', isDown);
-            handleAction(action, isDown, e);
-        }
-    }
+    Object.assign(
+        inputMap,
+        Settings.load('inputMap', defaultInputMap));
 }
 
 let gamepadsRunning = false;
@@ -216,45 +221,69 @@ window.addEventListener('gamepaddisconnected', e => {
     gamepadStates[e.gamepad.index] = null;
 });
 
-let resolveCapturePromise;
+export let isMapping = false;
+let resolveMapping = null;
+let resolveCapture = null;
+
+export function startMapping() {
+    isMapping = true;
+    document.body.classList.add('mapping');
+    return new Promise(resolve => { resolveMapping = resolve });
+}
+
+export function stopMapping() {
+    cancelCapture();
+    document.body.classList.remove('mapping');
+    isMapping = false;
+    resolveMapping && resolveMapping();
+}
 
 export function captureNextInput() {
     cancelCapture();
-    return new Promise(resolve => {
-        resolveCapturePromise = resolve;
-    });
-}
-
-function isCapturing() {
-    return !!resolveCapturePromise;
-}
-
-function resolveCapture(input) {
-    const resolve = resolveCapturePromise;
-    resolveCapturePromise = null;
-    resolve && resolve(input);
+    return new Promise(
+        resolve => { resolveCapture = resolve; })
+        .then(() => { resolveCapture = null; });
 }
 
 export function cancelCapture() {
-    resolveCapture(null);
+    resolveCapture && resolveCapture(null);
 }
 
-export function getMappings() {
-    return Object
-        .entries(inputMap)
-        .map(([input, action]) => ({ input, action }));
+async function startMapKey(keyElement, action) {
+    const cancel = e => {
+        e.stopPropagation();
+        cancelCapture();
+    };
+
+    document.body.addEventListener('mousedown', cancel, true);
+    document.body.addEventListener('touchstart', cancel, true);
+    document.body.classList.add('capturing');
+    keyElement.classList.add('mapping');
+    try {
+        const input = await captureNextInput();
+        if (input) {
+            inputMap[input] = action;
+            Settings.save('inputMap', inputMap);
+        }
+    } finally {
+        keyElement.classList.remove('mapping');
+        document.body.classList.remove('capturing');
+        document.body.removeEventListener('touchstart', cancel, true);
+        document.body.removeEventListener('mousedown', cancel, true);
+    }
 }
 
-export function addMapping(input, action) {
-    inputMap[input] = action;
-}
-
-export function removeMapping(input) {
-    delete inputMap[input];
+export function resetMappings() {
+    for (const input of Object.keys(inputMap)) {
+        delete inputMap[input];
+    }
+    Object.assign(inputMap, defaultInputMap);
+    Settings.save('inputMap', inputMap);
 }
 
 export function clearMappings() {
-    for (const [input, _] of Object.entries(inputMap)) {
+    for (const input of Object.keys(inputMap)) {
         delete inputMap[input];
     }
+    Settings.save('inputMap', inputMap);
 }

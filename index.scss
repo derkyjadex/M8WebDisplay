@@ -2,6 +2,7 @@
 
 $m8: #00efff;
 $m8-font: 'stealth57';
+$shield-z: 1000;
 
 body {
     font-family: sans-serif;
@@ -125,6 +126,26 @@ select {
         top: 25px;
         width: 100%;
         text-align: center;
+
+        body.mapping & {
+            display: none;
+        }
+    }
+
+    #mapping-buttons {
+        display: none;
+        position: absolute;
+        top: 25px;
+        width: 100%;
+        text-align: center;
+
+        body.mapping & {
+            display: block;
+        }
+
+        button {
+            margin: 0 5px 10px;
+        }
     }
 
     .error {
@@ -133,7 +154,6 @@ select {
         left: 100px;
         right: 100px;
         border: 3px solid #fff;
-        border-radius: 10px;
         padding: 20px;
         background-color: #a22;
         user-select: text;
@@ -147,7 +167,7 @@ select {
         }
     }
 
-    &.with-controls {
+    &.with-controls, body.mapping & {
         height: 100vw * 6 / 4;
         max-width: 100vh * 4 / 6;
 
@@ -167,22 +187,72 @@ select {
         height: 50%;
         top: 50%;
 
-        rect {
-            fill: #333;
-            rx: 10px;
-            stroke: #aaa;
-            stroke-width: 3px;
-            width: 130px;
-            height: 130px;
+        > div {
+            position: absolute;
+            width: 20.3125%;
+            height: 27.0833%;
+            border: 3px solid #aaa;
+            border-radius: 10px;
+            background-color: #333;
+            box-sizing: border-box;
+            padding: 5px;
+            text-align: center;
+            font-size: 80%;
 
             &.active {
-                stroke: $m8;
+                border-color: $m8;
             }
 
             &.mapping {
-                stroke: #e30;
+                border-color: #e30;
+                z-index: $shield-z + 1;
             }
         }
+    }
+
+    #mapping-help {
+        display: none;
+        position: absolute;
+        bottom: 50%;
+        width: 100%;
+        z-index: $shield-z + 1;
+        font-family: $m8-font;
+        text-align: center;
+
+        body.mapping & {
+            display: block;
+
+            .select-action {
+                display: block;
+            }
+            .enter-input {
+                display: none;
+            }
+        }
+
+        body.mapping.capturing & {
+            .select-action {
+                display: none;
+            }
+            .enter-input {
+                display: block;
+            }
+        }
+    }
+}
+
+#capture-shield {
+    display: none;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: $shield-z;
+
+    body.mapping.capturing & {
+        display: block;
     }
 }
 

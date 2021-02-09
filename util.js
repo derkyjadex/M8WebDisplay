@@ -20,4 +20,15 @@ export function toggle(query) {
 
 export function wait(time) {
     return new Promise(resolve => setTimeout(resolve, time));
-};
+}
+
+export function appendButton(target, title, onClick) {
+    const button = document.createElement('button');
+    button.innerText = title;
+    button.addEventListener('click', onClick);
+    document
+        .querySelector(target)
+        .append(button);
+
+    return button;
+}

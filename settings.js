@@ -25,7 +25,7 @@ setupSelect(
     'webgl2');
 
 setupToggle('snapPixels', 'Snap Pixels', true);
-
+setupButton('controlMapping', 'Control Mapping');
 setupButton('fullscreen', 'Fullscreen');
 
 function setupToggle(setting, title, defaultValue) {

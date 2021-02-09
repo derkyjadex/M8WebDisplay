@@ -35,16 +35,23 @@
 
         <div id="buttons" class="hidden"></div>
 
-        <svg id="controls" viewBox="0 0 640 480">
-            <rect data-action="edit" x="490" y="10" />
-            <rect data-action="option" x="340" y="10" />
-            <rect data-action="up" x="160" y="30" />
-            <rect data-action="left" x="10" y="180" />
-            <rect data-action="down" x="160" y="180" />
-            <rect data-action="right" x="310" y="180" />
-            <rect data-action="select" x="175" y="340" />
-            <rect data-action="start" x="325" y="340" />
-        </svg>
+        <div id="mapping-buttons"></div>
+
+        <div id="mapping-help">
+            <p class="select-action">Click a key to add a new mapping</p>
+            <p class="enter-input">Press a keyboard key or gamepad button</p>
+        </div>
+
+        <div id="controls">
+            <div data-action="edit" style="top: 2.0833%; left: 76.5625%"></div>
+            <div data-action="option" style="top: 2.0833%; left: 53.125%"></div>
+            <div data-action="up" style="top: 6.25%; left: 25%"></div>
+            <div data-action="left" style="top: 37.5%; left: 1.5625%"></div>
+            <div data-action="down" style="top: 37.5%; left: 25%"></div>
+            <div data-action="right" style="top: 37.5%; left: 48.4375%"></div>
+            <div data-action="select" style="top: 70.8333%; left: 27.3438%"></div>
+            <div data-action="start" style="top: 70.8333%; left: 50.7813%"></div>
+        </div>
     </div>
 
     <div id="settings" class="hidden">
@@ -59,6 +66,8 @@
     <div id="reload" class="hidden">
         <button>An update is available. Click to reload.</button>
     </div>
+
+    <div id="capture-shield"></div>
 
     <script type="module" src="main.js"></script>
 </body>

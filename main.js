@@ -3,7 +3,7 @@ import { SerialConnection } from './serial.js';
 import { Parser } from './parser.js';
 import { Renderer as OldRenderer } from './renderer.js';
 import { Renderer as GlRenderer } from './gl-renderer.js';
-import { show, hide, toggle } from './util.js';
+import { show, hide, toggle, appendButton } from './util.js';
 import { setup as setupWorker } from './worker-setup.js';
 
 import * as Input from './input.js';
@@ -35,7 +35,7 @@ let resizeCanvas = (function() {
 
         if (Settings.get('snapPixels') && dW <= 1600) {
             let dH = display.clientHeight * ratio;
-            if (Settings.get('showControls')) {
+            if (Settings.get('showControls') || Input.isMapping) {
                 dH /= 2;
             }
 
@@ -94,6 +94,11 @@ Settings.on('enableAudio', value => {
 
 Settings.on('snapPixels', () => resizeCanvas());
 
+Settings.on('controlMapping', () => {
+    Input.startMapping().then(resizeCanvas);
+    resizeCanvas();
+});
+
 Settings.on('fullscreen', () => {
     if (document.fullscreenElement) {
         document.exitFullscreen();
@@ -118,10 +123,7 @@ if (navigator.serial) {
     const connection = new SerialConnection(parser, updateDisplay);
     Input.setup(connection);
 
-    const button = document.createElement('button');
-    button.innerText = 'Connect with Serial';
-    document.getElementById('buttons').append(button);
-    button.addEventListener('click', () =>
+    appendButton('#buttons', 'Connect with Serial', () =>
         connection.connect()
             .catch(() => show('#serial-fail')));
 
@@ -134,10 +136,7 @@ if (navigator.serial) {
     const connection = new UsbConnection(parser, updateDisplay);
     Input.setup(connection);
 
-    const button = document.createElement('button');
-    button.innerText = 'Connect with WebUSB';
-    document.getElementById('buttons').append(button);
-    button.addEventListener('click', () =>
+    appendButton('#buttons', 'Connect with WebUSB', () =>
         connection.connect()
             .catch(() => show('#usb-fail')));
 
