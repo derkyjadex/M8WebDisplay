@@ -69,7 +69,7 @@ export class SerialConnection {
 
         this._port = null;
 
-        await port.writer.write(new Uint8Array([0x44])).catch(() => {});
+        port.writer && await port.writer.write(new Uint8Array([0x44])).catch(() => {});
         port.reader && await port.reader.cancel().catch(() => {});
         await port.close().catch(() => {});
 
