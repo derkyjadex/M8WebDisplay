@@ -36,8 +36,8 @@ export class Renderer {
 
     _rectShader;
     _rectVao;
-    _rectShapes = new Uint16Array(MAX_RECTS * 4);
-    _rectColours = new Uint8Array(MAX_RECTS * 3);
+    _rectShapes = new Uint16Array(MAX_RECTS * 6);
+    _rectColours = new Uint8Array(this._rectShapes.buffer, 8);
     _rectCount = 0;
     _rectsClear = true;
     _rectsTex;
@@ -52,16 +52,12 @@ export class Renderer {
 
         this._rectShapes.glBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this._rectShapes.glBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, this._rectShapes, gl.DYNAMIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, this._rectShapes, gl.STREAM_DRAW);
         gl.enableVertexAttribArray(0);
-        gl.vertexAttribPointer(0, 4, gl.UNSIGNED_SHORT, false, 0, 0)
+        gl.vertexAttribPointer(0, 4, gl.UNSIGNED_SHORT, false, 12, 0);
         gl.vertexAttribDivisor(0, 1);
-
-        this._rectColours.glBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this._rectColours.glBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, this._rectColours, gl.DYNAMIC_DRAW);
         gl.enableVertexAttribArray(1);
-        gl.vertexAttribPointer(1, 3, gl.UNSIGNED_BYTE, true, 0, 0)
+        gl.vertexAttribPointer(1, 3, gl.UNSIGNED_BYTE, true, 12, 8);
         gl.vertexAttribDivisor(1, 1);
 
         this._rectsTex = gl.createTexture();
@@ -98,10 +94,7 @@ export class Renderer {
             gl.bindVertexArray(this._rectVao);
 
             gl.bindBuffer(gl.ARRAY_BUFFER, this._rectShapes.glBuffer);
-            gl.bufferSubData(gl.ARRAY_BUFFER, 0, this._rectShapes, 0, this._rectCount * 4);
-
-            gl.bindBuffer(gl.ARRAY_BUFFER, this._rectColours.glBuffer);
-            gl.bufferSubData(gl.ARRAY_BUFFER, 0, this._rectColours, 0, this._rectCount * 3);
+            gl.bufferSubData(gl.ARRAY_BUFFER, 0, this._rectShapes.subarray(0, this._rectCount * 6));
 
             gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, this._rectCount);
 
@@ -123,13 +116,13 @@ export class Renderer {
 
         } else if (this._rectCount < MAX_RECTS) {
             const i = this._rectCount;
-            this._rectShapes[i * 4 + 0] = x;
-            this._rectShapes[i * 4 + 1] = y;
-            this._rectShapes[i * 4 + 2] = w;
-            this._rectShapes[i * 4 + 3] = h;
-            this._rectColours[i * 3 + 0] = r;
-            this._rectColours[i * 3 + 1] = g;
-            this._rectColours[i * 3 + 2] = b;
+            this._rectShapes[i * 6 + 0] = x;
+            this._rectShapes[i * 6 + 1] = y;
+            this._rectShapes[i * 6 + 2] = w;
+            this._rectShapes[i * 6 + 3] = h;
+            this._rectColours[i * 12 + 0] = r;
+            this._rectColours[i * 12 + 1] = g;
+            this._rectColours[i * 12 + 2] = b;
             this._rectCount++;
 
         } else {
@@ -229,7 +222,7 @@ export class Renderer {
 
         this._waveData.glBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this._waveData.glBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, this._waveData, gl.DYNAMIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, this._waveData, gl.STREAM_DRAW);
         gl.enableVertexAttribArray(0);
         gl.vertexAttribIPointer(0, 1, gl.UNSIGNED_BYTE, 1, 0);
     }
