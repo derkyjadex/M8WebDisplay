@@ -32,7 +32,7 @@ export class Parser {
             case 0xfd:
                 if (frame.length >= 9) {
                     this._renderer.drawText(
-                        String.fromCharCode(frame[1]),
+                        frame[1],
                         frame[2] + frame[3] * 256,
                         frame[4] + frame[5] * 256,
                         frame[6],

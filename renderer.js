@@ -43,7 +43,7 @@ export class Renderer {
 
                 this._textNodes[y * 39 + x] = {
                     node: t,
-                    char: ' ',
+                    char: 32,
                     fill: '_000'
                 };
             }
@@ -77,7 +77,7 @@ export class Renderer {
         for (const [_, update] of Object.entries(this._textUpdates)) {
             const node = update.node;
             if (update.char !== node.char) {
-                node.node.nodeValue = update.char;
+                node.node.nodeValue = String.fromCharCode(update.char);
                 node.char = update.char;
             }
             if (update.fill !== node.fill) {
@@ -150,7 +150,7 @@ export class Renderer {
         for (let i = 0; i < this._textNodes.length; i++) {
             this._textUpdates[i] = {
                 node: this._textNodes[i],
-                char: ' ',
+                char: 32,
                 fill: `rgb(0, 0, 0)`
             };
 

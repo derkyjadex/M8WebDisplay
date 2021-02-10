@@ -200,7 +200,7 @@ export class Renderer {
 
     drawText(c, x, y, r, g, b) {
         const i = Math.floor(y / 10) * 40 + Math.floor(x / 8);
-        this._textChars[i] = c.charCodeAt(0) - 32;
+        this._textChars[i] = c - 32;
         this._textChars.updated = true;
         this._textColours[i * 3 + 0] = r;
         this._textColours[i * 3 + 1] = g;
