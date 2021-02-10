@@ -242,7 +242,10 @@ export function captureNextInput() {
     cancelCapture();
     return new Promise(
         resolve => { resolveCapture = resolve; })
-        .then(() => { resolveCapture = null; });
+        .then(input => {
+            resolveCapture = null;
+            return input;
+        });
 }
 
 export function cancelCapture() {
