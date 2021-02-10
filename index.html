@@ -15,24 +15,6 @@
     <div id="display">
         <canvas id="canvas" width="320" height="240"></canvas>
 
-        <div id="serial-fail" class="error hidden">
-            <p>Failed to connect over Serial.
-            Are you sure your Teensy is connected and the M8 Headless firmware is loaded?</p>
-            <p>Make sure that there are no other programs running which may have the serial port open.</p>
-            <p>It is also possible there's a bug in this code.
-            There may be some messages in the developer console that will help with debugging.</a>
-        </div>
-        <div id="usb-fail" class="error hidden">
-            <p>Failed to connect with WebUSB.
-            Are you sure your Teensy is connected and the M8 Headless firmware is loaded?</p>
-            <p>Connecting with WebUSB is known not to work on Windows or Linux.
-            If you are using Chrome you can use Serial instead but you need to enable an experimental flag by going to <code>chrome://flags</code> and enabling "Experimental Web Platform features".</p>
-        </div>
-        <div id="no-serial-usb" class="error hidden">
-            <p>Your browser doesn't appear to have Serial or WebUSB support.
-            These are only currently supported in Chrome and some Chrome-derived browsers.</p>
-        </div>
-
         <div id="buttons" class="hidden"></div>
 
         <div id="mapping-buttons"></div>
@@ -52,6 +34,25 @@
             <div data-action="select" style="top: 70.8333%; left: 27.3438%"></div>
             <div data-action="start" style="top: 70.8333%; left: 50.7813%"></div>
         </div>
+    </div>
+
+    <div id="serial-fail" class="error hidden">
+        <p>Failed to connect over Serial.
+        Are you sure your Teensy is connected and the M8 Headless firmware is loaded?</p>
+        <p>Make sure that there are no other programs running which may have the serial port open.</p>
+        <p>On Linux you may also need make sure you have permission to open the serial port (eg. make yourself a member of the <code>dialout</code> group).</p>
+        <p>It is also possible there's a bug in this code.
+        There may be some messages in the developer console that will help with debugging.</a>
+    </div>
+    <div id="usb-fail" class="error hidden">
+        <p>Failed to connect with WebUSB.
+        Are you sure your Teensy is connected and the M8 Headless firmware is loaded?</p>
+        <p>Connecting with WebUSB is known not to work on Windows or Linux.
+        If you are using Chrome you can use Serial instead but you need to enable an experimental flag by going to <code>chrome://flags</code> and enabling "Experimental Web Platform features".</p>
+    </div>
+    <div id="no-serial-usb" class="error hidden">
+        <p>Your browser doesn't appear to have Serial or WebUSB support.
+        These are only currently supported in Chrome and some Chrome-derived browsers.</p>
     </div>
 
     <div id="settings" class="hidden">

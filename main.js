@@ -109,7 +109,7 @@ Settings.on('fullscreen', () => {
 
 function updateDisplay(isConnected) {
     if (isConnected) {
-        hide('#buttons, #display .error');
+        hide('#buttons, .error');
         Audio.start(10);
 
     } else {
