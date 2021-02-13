@@ -26,6 +26,7 @@ setupSelect(
 
 setupToggle('snapPixels', 'Snap Pixels', true);
 setupButton('controlMapping', 'Control Mapping');
+setupButton('firmware', 'Load Firmware');
 setupButton('fullscreen', 'Fullscreen');
 
 function setupToggle(setting, title, defaultValue) {

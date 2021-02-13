@@ -9,6 +9,7 @@ import { setup as setupWorker } from './worker-setup.js';
 import * as Input from './input.js';
 import * as Audio from './audio.js';
 import * as Settings from './settings.js';
+import * as Firmware from './firmware.js';
 
 function setBackground(r, g, b) {
     const colour = `rgb(${r}, ${g}, ${b})`;
@@ -106,6 +107,8 @@ Settings.on('fullscreen', () => {
         document.body.requestFullscreen();
     }
 });
+
+Settings.on('firmware', () => Firmware.open());
 
 function updateDisplay(isConnected) {
     if (isConnected) {
