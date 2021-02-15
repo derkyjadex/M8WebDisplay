@@ -1,26 +1,18 @@
 import { show, hide, toggle, wait } from './util.js';
 import { readHexToBlocks } from './hex.js';
 
-const VID = 0x16c0;
-const PID_WRITE = 0x0478;
-const PID_REBOOT = 0x0483;
-const PID_M8 = 0x048a;
-
-export function open() {
-    show('#firmware');
+function setState(state) {
+    document.getElementById('firmware').className = state;
 }
 
-async function flash(blocks) {
-    const progress = document.getElementById('firmware-progress');
-    progress.value = 0;
-    show('#firmware-progress');
+export function open() {
+    blocks = null;
+    device = null;
+    setState('file-select');
+}
 
-    const [device] = await navigator.hid.requestDevice({
-        filters: [{
-            vendorId: 0x16c0,
-            productId: 0x0478
-        }]
-    });
+async function flash(blocks, device, onProgress) {
+    onProgress(0);
 
     await device.open();
     try {
@@ -37,7 +29,7 @@ async function flash(blocks) {
             buffer.set(blocks[i], 64);
 
             await device.sendReport(0, buffer);
-            progress.value = (i + 1) / blocks.length;
+            onProgress((i + 1) / blocks.length);
             await wait(i === 0 ? 1500 : 5);
         }
 
@@ -47,34 +39,90 @@ async function flash(blocks) {
         buffer[2] = 0xff;
         await device.sendReport(0, buffer);
 
-        hide('#firmware');
-
     } finally {
         await device.close().catch(() => {});
     }
 }
 
+function isTeensy(device) {
+    const info = device.collections[0];
+    return info
+        && info.usagePage === 0xff9c
+        && info.usage === 0x25;
+}
+
 let blocks = null;
+let device = null;
 
 document
-    .getElementById('firmware-file')
+    .querySelector('#firmware button.close')
+    .addEventListener('click', () => {
+        blocks = null;
+        device = null;
+        document
+            .querySelector('#firmware input')
+            .value = null;
+
+        setState('hidden');
+    });
+
+document
+    .querySelector('#firmware input')
     .addEventListener('change', async e => {
         blocks = null;
+
         const file = e.target.files[0];
+        if (!file)
+            return;
+
+        setState('file-loading');
         try {
-            blocks = file && await readHexToBlocks(file, 1024, 0x60000000);
-        } finally {
-            if (blocks) {
-                show('#firmware-flash');
-            } else {
-                hide('#firmware-flash');
-            }
+            blocks = await readHexToBlocks(file, 1024, 0x60000000);
+        } catch (error) {
+            console.error(error);
+            setState('file-error');
+            return;
+        }
+
+        setState('file-loaded');
+    });
+
+document
+    .querySelector('#firmware button.select-device')
+    .addEventListener('click', async () => {
+        device = null;
+        const result = await navigator.hid.requestDevice({
+            filters: [{
+                vendorId: 0x16c0,
+                productId: 0x0478
+            }]
+        });
+        device = result && result[0];
+
+        if (!device)
+            return;
+
+        if (isTeensy(device)) {
+            setState('device-selected');
+        } else {
+            device = null;
+            setState('device-error');
         }
     });
 
 document
-    .getElementById('firmware-flash')
-    .addEventListener('click', () =>
-        flash(blocks));
+    .querySelector('#firmware button.flash')
+    .addEventListener('click', async () => {
+        const progress = document.querySelector('#firmware progress.flash');
 
-hide('#firmware-flash');
+        setState('flashing');
+        try {
+            await flash(blocks, device, p => progress.value = p);
+        } catch (error) {
+            console.error(error);
+            setState('flash-error');
+            return;
+        }
+
+        setState('flash-success');
+    });

@@ -71,9 +71,20 @@
     <div id="capture-shield"></div>
 
     <div id="firmware" class="hidden">
-        <input id="firmware-file" type="file" accept=".hex">
-        <button id="firmware-flash">Flash</button>
-        <progress id="firmware-progress">
+        <p class="select-file-msg">Select a firmware file</p>
+        <input type="file" accept=".hex">
+        <p class="file-loading-msg">Loading file...</p>
+        <p class="file-error-msg">The selected file does not appear to be valid Teensy 4.1 firmware</p>
+        <p class="select-device-msg">Connect your Teensy board and press the button</p>
+        <button class="select-device">Select Teensy Device</button>
+        <p class="device-error-msg">The selected device does not appear to be a Teensy 4.1</p>
+        <p class="flash-msg">Ready to flash</p>
+        <button class="flash">Flash</button>
+        <p class="flashing-msg">Flashing...</p>
+        <progress class="flash"></progress>
+        <p class="flash-error-msg">There was an error flashing the device. You can try again.</p>
+        <p class="flash-success-msg">Flashing completed successfully</p>
+        <button class="close">Close</button>
     </div>
 
     <script type="module" src="main.js"></script>

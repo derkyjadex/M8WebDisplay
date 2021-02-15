@@ -7,6 +7,8 @@ export async function readHexToBlocks(file, blockSize, offset) {
 
 	for await (let { address, data } of parseHex(file)) {
         address -= offset;
+        if (address < 0)
+            throw new HexFormatError(`Negative address after applying offset`);
 
 		let blockIndex = Math.floor(address / blockSize);
 		let dataIndex = 0;
@@ -47,142 +49,152 @@ async function* parseHex(file) {
 	let baseAddress = 0;
 
     const reader = file.stream().getReader();
-    //const fileBuffer = new Uint8Array(await file.arrayBuffer());
     while (true) {
-    const result = await reader.read();
+        const result = await reader.read();
 
-    if (!result.value)
-        break;
+        if (!result.value)
+            break;
 
-	for (const byte of result.value) {
-		char++;
+        for (const byte of result.value) {
+            char++;
 
-		if (seenEnd)
-			throw new HexFormatError(`Unexpected data after end record, line ${line} char ${char}`);
+            if (seenEnd)
+                throw new HexFormatError(
+                    `Unexpected data after end record, line ${line} char ${char}`);
 
-		switch (state) {
-			case START_LINE:
-				switch (byte) {
-                    case 0x3a: // :
-						state = HEX1;
-						break;
-					
-					default:
-						throw new HexFormatError(`Expecting ':' at start of line ${line} char ${char}`);
-				}
-				break;
+            switch (state) {
+                case START_LINE:
+                    switch (byte) {
+                        case 0x3a: // :
+                            state = HEX1;
+                            break;
 
-			case HEX1:
-				if (byte === 0x0d) // \r
-					continue;
+                        default:
+                            throw new HexFormatError(
+                                `Expecting ':' at start of line ${line} char ${char}`);
+                    }
+                    break;
 
-				if (byte === 0x0a) { // \n
-					if (bufferIndex < lineBytes)
-						throw new HexFormatError(`Unexpected end of line on line ${line} char ${char}`);
+                case HEX1:
+                    if (byte === 0x0d) // \r
+                        continue;
 
-					if (checksum !== 0)
-						throw new HexFormatError(`Invalid checksum on line ${line}`);
+                    if (byte === 0x0a) { // \n
+                        if (bufferIndex < lineBytes)
+                            throw new HexFormatError(
+                                `Unexpected end of line on line ${line} char ${char}`);
 
-					switch (buffer[3]) {
-						case 0x00:
-							yield {
-								address: baseAddress + buffer[1] * 256 + buffer[2],
-								data: buffer.subarray(4, lineBytes - 1)
-							};
-							break;
+                        if (checksum !== 0)
+                            throw new HexFormatError(
+                                `Invalid checksum on line ${line}`);
 
-						case 0x01:
-							seenEnd = true;
-							break;
+                        switch (buffer[3]) {
+                            case 0x00:
+                                yield {
+                                    address: baseAddress + buffer[1] * 256 + buffer[2],
+                                    data: buffer.subarray(4, lineBytes - 1)
+                                };
+                                break;
 
-						case 0x02:
-							baseAddress = (buffer[4] * 256 + buffer[5]) << 4;
-							break;
+                            case 0x01:
+                                seenEnd = true;
+                                break;
 
-						case 0x03:
-							break;
+                            case 0x02:
+                                baseAddress = (buffer[4] * 256 + buffer[5]) << 4;
+                                break;
 
-						case 0x04:
-							baseAddress = (buffer[4] * 256 + buffer[5]) << 16;
-							break;
+                            case 0x03:
+                                break;
 
-						case 0x05:
-							break;
+                            case 0x04:
+                                baseAddress = (buffer[4] * 256 + buffer[5]) << 16;
+                                break;
 
-						default:
-							throw new HexFormatError(`Invalid record type on line ${line}`);
-					}
+                            case 0x05:
+                                break;
 
-					state = START_LINE;
-					line++;
-					char = 0;
-					bufferIndex = 0;
-					checksum = 0;
-					lineBytes = 1;
+                            default:
+                                throw new HexFormatError(
+                                    `Invalid record type on line ${line}`);
+                        }
 
-				} else {
-					if (bufferIndex >= lineBytes)
-						throw new HexFormatError(`Record too long on line ${line} char ${char}`);
+                        state = START_LINE;
+                        line++;
+                        char = 0;
+                        bufferIndex = 0;
+                        checksum = 0;
+                        lineBytes = 1;
 
-					const hexValue = fromHex(byte);
-					if (hexValue === null)
-						throw new HexFormatError(`Expecting hex character on line ${line} char ${char}`);
+                    } else {
+                        if (bufferIndex >= lineBytes)
+                            throw new HexFormatError(
+                                `Record too long on line ${line} char ${char}`);
 
-					value = hexValue * 16;
-					state = HEX2;
-				}
-				break;
+                        const hexValue = fromHex(byte);
+                        if (hexValue === null)
+                            throw new HexFormatError(
+                                `Expecting hex character on line ${line} char ${char}`);
 
-			case HEX2:
-				const hexValue = fromHex(byte);
-				if (hexValue === null)
-					throw new HexFormatError(`Expecting hex character on line ${line} char ${char}`);
+                        value = hexValue * 16;
+                        state = HEX2;
+                    }
+                    break;
 
-				value += hexValue;
-				checksum = (checksum + value) & 0xFF;
-				if (bufferIndex === 0) {
-					lineBytes = value + 5;
-				}
-				buffer[bufferIndex++] = value;
-				state = HEX1;
-				break;
-		}
-	}
+                case HEX2:
+                    const hexValue = fromHex(byte);
+                    if (hexValue === null)
+                        throw new HexFormatError(
+                            `Expecting hex character on line ${line} char ${char}`);
 
-    if (result.done)
-        break;
+                    value += hexValue;
+                    checksum = (checksum + value) & 0xFF;
+                    if (bufferIndex === 0) {
+                        lineBytes = value + 5;
+                    }
+                    buffer[bufferIndex++] = value;
+                    state = HEX1;
+                    break;
+            }
+        }
+
+        if (result.done)
+            break;
     }
 
-	if (seenEnd)
-		return;
+    if (seenEnd)
+        return;
 
-	if (state != HEX1 || byte < lineBytes)
-		throw new HexFormatError(`Unexpected end of file, line ${line} char ${char}`);
+    if (state != HEX1 || byte < lineBytes)
+        throw new HexFormatError(
+            `Unexpected end of file, line ${line} char ${char}`);
 
-	if (checksum !== 0)
-		throw new HexFormatError(`Invalid checksum on line ${line}`);
+    if (checksum !== 0)
+        throw new HexFormatError(
+            `Invalid checksum on line ${line}`);
 
-	const type = buffer[3];
-	if (type !== 0x01)
-		throw new HexFormatError(`Missing end of file record, line ${line}`);
+    const type = buffer[3];
+    if (type !== 0x01)
+        throw new HexFormatError(
+            `Missing end of file record, line ${line}`);
 }
 
 function fromHex(byte) {
-	if (byte >= 0x30 && byte <= 0x39)
-		return byte - 0x30;
+    if (byte >= 0x30 && byte <= 0x39)
+        return byte - 0x30;
 
-	if (byte >= 0x41 && byte <= 0x46)
-		return byte - 0x37;
+    if (byte >= 0x41 && byte <= 0x46)
+        return byte - 0x37;
 
-	if (byte >= 0x61 && byte <= 0x66)
-		return byte - 0x57;
+    if (byte >= 0x61 && byte <= 0x66)
+        return byte - 0x57;
 
-	return null;
+    return null;
 }
 
 export class HexFormatError extends Error {
-	constructor(...params) {
-		super(...params);
-		this.name = 'HexFormatError';
-	}
+    constructor(...params) {
+        super(...params);
+        this.name = 'HexFormatError';
+    }
 }
