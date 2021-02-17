@@ -96,8 +96,14 @@ Settings.on('enableAudio', value => {
 Settings.on('snapPixels', () => resizeCanvas());
 
 Settings.on('controlMapping', () => {
+    hide('#info');
     Input.startMapping().then(resizeCanvas);
     resizeCanvas();
+});
+
+Settings.on('firmware', () => {
+    hide('#info');
+    Firmware.open();
 });
 
 Settings.on('fullscreen', () => {
@@ -108,11 +114,11 @@ Settings.on('fullscreen', () => {
     }
 });
 
-Settings.on('firmware', () => Firmware.open());
+Settings.on('about', () => show('#info'));
 
 function updateDisplay(isConnected) {
     if (isConnected) {
-        hide('#buttons, .error');
+        hide('#buttons, .error, #info');
         Audio.start(10);
 
     } else {
@@ -126,9 +132,12 @@ if (navigator.serial) {
     const connection = new SerialConnection(parser, updateDisplay);
     Input.setup(connection);
 
-    appendButton('#buttons', 'Connect with Serial', () =>
+    appendButton('#buttons', 'Connect', () =>
         connection.connect()
-            .catch(() => show('#serial-fail')));
+            .catch(() => {
+                hide('#info');
+                show('#serial-fail');
+            }));
 
     window.addEventListener('beforeunload', e =>
         connection.disconnect());
@@ -141,12 +150,19 @@ if (navigator.serial) {
 
     appendButton('#buttons', 'Connect with WebUSB', () =>
         connection.connect()
-            .catch(() => show('#usb-fail')));
+            .catch(() => {
+                hide('#info');
+                show('#usb-fail');
+            }));
 
     show('#buttons');
 
 } else {
     show('#no-serial-usb');
 }
+
+document
+    .querySelector('#info button')
+    .addEventListener('click', () => hide('#info'));
 
 setupWorker();

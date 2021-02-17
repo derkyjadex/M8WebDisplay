@@ -14,6 +14,11 @@ body {
 
 a, a:visited {
     color: $m8;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
 
     &:focus {
         outline: 1px solid $m8;
@@ -101,15 +106,6 @@ progress {
     &::-webkit-progress-value {
         background-color: $m8;
     }
-}
-
-#info {
-    position: fixed;
-    width: 100%;
-    bottom: 0;
-    text-align: center;
-    padding: 5px;
-    background-color: rgba(0, 0, 0, 0.5);
 }
 
 #display {
@@ -215,7 +211,6 @@ progress {
         position: absolute;
         bottom: 50%;
         width: 100%;
-        z-index: $shield-z + 1;
         font-family: $m8-font;
         text-align: center;
 
@@ -236,6 +231,8 @@ progress {
             }
             .enter-input {
                 display: block;
+                position: relative;
+                z-index: $shield-z + 1;
             }
         }
     }
@@ -248,11 +245,32 @@ progress {
     bottom: 0;
     left: 0;
     right: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.75);
     z-index: $shield-z;
 
     body.mapping.capturing & {
         display: block;
+    }
+}
+
+#info {
+    position: absolute;
+    top: 100px;
+    left: 100px;
+    right: 100px;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.75);
+    text-align: center;
+    line-height: 1.5;
+
+    h1 {
+        font-family: $m8-font;
+        font-size: 32px;
+        margin: 0 0 16px;
+    }
+
+    .warning {
+        color: #e22;
     }
 }
 

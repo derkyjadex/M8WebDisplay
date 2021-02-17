@@ -28,6 +28,7 @@ setupToggle('snapPixels', 'Snap Pixels', true);
 setupButton('controlMapping', 'Control Mapping');
 setupButton('firmware', 'Load Firmware');
 setupButton('fullscreen', 'Fullscreen');
+setupButton('about', 'About');
 
 function setupToggle(setting, title, defaultValue) {
     const value = load(setting, defaultValue);
