@@ -1,4 +1,4 @@
-import * as Shaders from './shaders.js';
+import * as Shaders from './build/shaders.js';
 import { font } from './font.js';
 
 const MAX_RECTS = 1024;
@@ -346,8 +346,8 @@ function buildProgram(gl, name) {
     return linkProgram(
         gl,
         name,
-        compileShader(gl, `${name}Vert`, gl.VERTEX_SHADER),
-        compileShader(gl, `${name}Frag`, gl.FRAGMENT_SHADER));
+        compileShader(gl, `${name}_vert`, gl.VERTEX_SHADER),
+        compileShader(gl, `${name}_frag`, gl.FRAGMENT_SHADER));
 }
 
 function rand(min, max) {

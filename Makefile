@@ -10,9 +10,19 @@ NPM = node_modules/
 
 index.html: build/index.css
 
+build/shaders.js: $(wildcard shaders/*.vert) $(wildcard shaders/*.frag)
+	@echo Building $@
+	@for i in $^; do \
+	  printf "export const $$(basename $${i} | tr . _) = \`"; \
+	  perl -0pe 's/([\n;,{}()\[\]=+\-*\/])[ \t\r\n]+/$$1/g' $$i; \
+	  echo "\`;"; \
+	done > $@
+
 font.js: font.png
 	@echo Building $@
 	@echo "export const font = 'data:image/png;base64,`base64 $^`';" > $@
+
+gl-renderer.js: build/shaders.js font.js
 
 build/main.js: $(wildcard *.js) $(NPM)
 	@echo Building $@
