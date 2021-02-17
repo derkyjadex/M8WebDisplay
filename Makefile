@@ -36,7 +36,14 @@ build/worker.js: worker.js build/index.html $(NPM)
 	@sed "s/INDEXHASH/`md5 -q build/index.html`/" $< \
 	  | npx terser --mangle --compress > $@
 
-build/index.css: $(wildcard *.scss) $(NPM)
+build/font.scss: stealth57.woff2
+	@echo Building $@
+	@echo "@font-face {\n\
+	    font-family: 'stealth57';\n\
+	    src: url('data:font/woff2;base64,$$(base64 $^)') format('woff2');\n\
+	}" > $@
+
+build/index.css: $(wildcard *.scss) build/font.scss $(NPM)
 	@echo Building $@
 	@mkdir -p $(@D)
 	@npx sass --style=compressed index.scss > $@
