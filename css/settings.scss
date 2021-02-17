@@ -1,0 +1,117 @@
+@use 'common' as *;
+
+#settings {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    transition: background-color $menu-time linear 0s;
+    user-select: none;
+
+    &.hidden {
+        display: block;
+        width: 0;
+        height: 0;
+        background-color: rgba(0, 0, 0, 0);
+
+        .setting {
+            visibility: hidden;
+            margin-left: -323px;
+            transition: none;
+        }
+
+        #menu-button {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23fff' stroke-width='1.5' d='M2 4h12M2 8h12M2 12h12'/%3e%3c/svg%3e");
+        }
+    }
+
+    &.hidden.auto-hide {
+        #menu-button {
+            opacity: 0%;
+            transition: opacity 0.8s linear 0.8s;
+
+            &:hover, &:focus {
+                opacity: 100%;
+                transition: opacity 0s;
+            }
+        }
+    }
+
+    #menu-button {
+        width: 32px;
+        height: 32px;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23fff' stroke-width='1.5' d='M3 3l10 10M3 13l10-10'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-color: transparent;
+        border-color: transparent;
+        font-size: 0;
+        margin-bottom: -3px;
+
+        &:hover {
+            background-color: $m8;
+        }
+
+        &:active {
+            background-color: darken($m8, 10%);
+            color: #fff;
+        }
+
+        &:focus {
+            color: $m8;
+            border-color: $m8;
+
+            &:hover {
+                color: #000;
+            }
+
+            &:active {
+                color: #fff;
+            }
+        }
+    }
+
+    .setting {
+        width: 320px;
+        border: 3px solid #fff;
+        border-width: 3px 3px 0 0;
+        margin-left: 0;
+        transition: margin-left $menu-time linear 0s;
+
+        &:last-child {
+            border-bottom-width: 3px;
+        }
+
+        label {
+            display: block;
+            position: relative;
+            padding: 10px;
+
+            input, select {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                right: 0;
+                margin: 0;
+                border: 0;
+            }
+
+            input[type=checkbox] {
+                padding: 10px;
+            }
+
+            select {
+                width: 50%;
+            }
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            margin: 0;
+            border: 0;
+            padding: 10px;
+        }
+    }
+}

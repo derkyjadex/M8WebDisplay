@@ -1,0 +1,120 @@
+@use 'common' as *;
+
+#firmware {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 100px;
+    background-color: rgba(0, 0, 0, 0.75);
+    text-align: center;
+    font-family: $m8-font;
+    line-height: 1.5;
+
+    &.hidden {
+        display: none;
+    }
+
+    p.select-file-msg,
+    input[type=file],
+    p.file-loading-msg,
+    p.file-error-msg,
+    p.select-device-msg,
+    button.select-device,
+    p.device-error-msg,
+    p.flash-msg,
+    button.flash,
+    p.flashing-msg,
+    progress.flash,
+    p.flash-error-msg,
+    p.flash-success-msg {
+        display: none;
+        margin: 20px auto;
+    }
+
+    p.file-error-msg,
+    p.device-error-msg,
+    p.flash-error-msg {
+        color: #e22;
+    }
+
+    &.file-select {
+        p.select-file-msg,
+        input[type=file] {
+            display: block;
+        }
+    }
+
+    &.file-loading {
+        p.file-loading-msg {
+            display: block;
+        }
+
+        button.close {
+            display: none;
+        }
+    }
+
+    &.file-error {
+        p.select-file-msg,
+        input[type=file],
+        p.file-error-msg {
+            display: block;
+        }
+    }
+
+    &.file-loaded {
+        p.select-device-msg,
+        button.select-device {
+            display: block;
+        }
+    }
+
+    &.device-error {
+        p.select-device-msg,
+        button.select-device,
+        p.device-error-msg {
+            display: block;
+        }
+    }
+
+    &.device-selected {
+        p.flash-msg,
+        button.flash {
+            display: block;
+        }
+    }
+
+    &.flashing {
+        p.flashing-msg,
+        progress.flash {
+            display: block;
+        }
+
+        button.close {
+            display: none;
+        }
+    }
+
+    &.flash-error {
+        p.select-device-msg,
+        button.select-device,
+        p.flash-error-msg {
+            display: block;
+        }
+    }
+
+    &.flash-success {
+        p.flash-success-msg {
+            display: block;
+        }
+    }
+
+    button.close {
+        display: block;
+        position: absolute;
+        right: 100px;
+        bottom: 100px;
+    }
+}

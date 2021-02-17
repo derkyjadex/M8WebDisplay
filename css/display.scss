@@ -1,0 +1,146 @@
+@use 'common' as *;
+
+#display {
+    position: relative;
+    width: 100vw;
+    height: 100vw * 3 / 4;
+    max-width: 100vh * 4 / 3;
+    max-height: 100vh;
+    margin: 0 auto;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    user-select: none;
+
+    canvas, svg {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+    }
+
+    canvas {
+        image-rendering: pixelated;
+    }
+
+    svg text {
+        font-family: $m8-font;
+        font-size: 16px;
+    }
+
+    #buttons {
+        position: absolute;
+        top: 25px;
+        width: 100%;
+        text-align: center;
+
+        body.mapping & {
+            display: none;
+        }
+    }
+
+    #mapping-buttons {
+        display: none;
+        position: absolute;
+        top: 25px;
+        width: 100%;
+        text-align: center;
+
+        body.mapping & {
+            display: block;
+        }
+
+        button {
+            margin: 0 5px 10px;
+        }
+    }
+
+    &.with-controls, body.mapping & {
+        height: 100vw * 6 / 4;
+        max-width: 100vh * 4 / 6;
+
+        canvas, svg {
+            height: 50%;
+        }
+
+        #controls {
+            display: block;
+        }
+    }
+
+    #controls {
+        display: none;
+        position: relative;
+        width: 100%;
+        height: 50%;
+        top: 50%;
+
+        > div {
+            position: absolute;
+            width: 20.3125%;
+            height: 27.0833%;
+            border: 3px solid #aaa;
+            border-radius: 10px;
+            background-color: #333;
+            box-sizing: border-box;
+            padding: 5px;
+            text-align: center;
+            font-size: 80%;
+
+            &.active {
+                border-color: $m8;
+            }
+
+            &.mapping {
+                border-color: #e30;
+                z-index: $shield-z + 1;
+            }
+        }
+    }
+
+    #mapping-help {
+        display: none;
+        position: absolute;
+        bottom: 50%;
+        width: 100%;
+        font-family: $m8-font;
+        text-align: center;
+
+        body.mapping & {
+            display: block;
+
+            .select-action {
+                display: block;
+            }
+            .enter-input {
+                display: none;
+            }
+        }
+
+        body.mapping.capturing & {
+            .select-action {
+                display: none;
+            }
+            .enter-input {
+                display: block;
+                position: relative;
+                z-index: $shield-z + 1;
+            }
+        }
+    }
+}
+
+#capture-shield {
+    display: none;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    z-index: $shield-z;
+
+    body.mapping.capturing & {
+        display: block;
+    }
+}
