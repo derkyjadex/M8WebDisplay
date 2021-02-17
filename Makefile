@@ -18,11 +18,11 @@ build/shaders.js: $(wildcard shaders/*.vert) $(wildcard shaders/*.frag)
 	  echo "\`;"; \
 	done > $@
 
-font.js: font.png
+build/font.js: font.png
 	@echo Building $@
-	@echo "export const font = 'data:image/png;base64,`base64 $^`';" > $@
+	@echo "export const font = 'data:image/png;base64,$$(npx imagemin $^ | base64)';" > $@
 
-gl-renderer.js: build/shaders.js font.js
+gl-renderer.js: build/shaders.js build/font.js
 
 build/main.js: $(wildcard *.js) $(NPM)
 	@echo Building $@

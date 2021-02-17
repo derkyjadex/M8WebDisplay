@@ -1,5 +1,5 @@
 import * as Shaders from './build/shaders.js';
-import { font } from './font.js';
+import { font } from './build/font.js';
 
 const MAX_RECTS = 1024;
 

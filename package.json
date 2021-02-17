@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "imagemin-cli": "^6.0.0",
     "juice": "^7.0.0",
     "local-web-server": "^4.2.1",
     "rollup": "^2.38.1",
