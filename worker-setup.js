@@ -1,4 +1,4 @@
-import { show, hide } from './util.js';
+import { show, hide, on } from './util.js';
 
 const updateInterval = 30 * 60 * 1000;
 
@@ -11,9 +11,7 @@ function reload() {
 }
 
 let reloadAction = () => {};
-document
-    .querySelector('#reload button')
-    .addEventListener('click', () => reloadAction());
+on('#reload button', 'click', () => reloadAction());
 
 export async function setup() {
     navigator.serviceWorker

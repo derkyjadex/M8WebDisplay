@@ -25,10 +25,25 @@ export function wait(time) {
 export function appendButton(target, title, onClick) {
     const button = document.createElement('button');
     button.innerText = title;
-    button.addEventListener('click', onClick);
-    document
-        .querySelector(target)
-        .append(button);
+    on(button, 'click', onClick);
+
+    if (typeof target === 'string') {
+        target = document.querySelector(target)
+    }
+
+    target.append(button);
 
     return button;
+}
+
+export function on(target, eventType, action) {
+    if (typeof target === 'string') {
+        target = document.querySelectorAll(target);
+    } else if (!(target instanceof Array)) {
+        target = [target];
+    }
+
+    for (const element of target) {
+        element.addEventListener(eventType, action);
+    }
 }

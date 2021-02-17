@@ -1,16 +1,12 @@
-import { show, hide, toggle } from './util.js';
+import { show, hide, toggle, appendButton, on } from './util.js';
 
-document
-    .getElementById('menu-button')
-    .addEventListener('click', e => toggle('#settings'));
+on('#menu-button', 'click', () => toggle('#settings'));
 
-document
-    .getElementById('settings')
-    .addEventListener('click', e => {
-        if (e.target.id === 'settings') {
-            hide('#settings');
-        }
-    });
+on('#settings', 'click', e => {
+    if (e.target.id === 'settings') {
+        hide('#settings');
+    }
+});
 
 const actions = {};
 const values = {};
@@ -43,7 +39,7 @@ function setupToggle(setting, title, defaultValue) {
     input.checked = value;
     label.append(input);
 
-    input.addEventListener('change', () =>
+    on(input, 'change', () =>
         save(setting, input.checked));
 
     document
@@ -71,7 +67,7 @@ function setupSelect(setting, title, options, defaultValue) {
 
     label.append(select);
 
-    select.addEventListener('change', () =>
+    on(select, 'change', () =>
         save(setting, select.value));
 
     document
@@ -82,11 +78,7 @@ function setupSelect(setting, title, options, defaultValue) {
 function setupButton(setting, title) {
     const div = document.createElement('div');
     div.classList.add('setting');
-    const button = document.createElement('button');
-    button.innerText = title;
-    div.append(button);
-
-    button.addEventListener('click', () => {
+    appendButton(div, title, () => {
         hide('#settings');
         actions[setting] && actions[setting]();
     });
@@ -110,7 +102,7 @@ export function save(setting, value) {
     localStorage[setting] = JSON.stringify(value);
 }
 
-export function on(setting, action) {
+export function onChange(setting, action) {
     actions[setting] = action;
     if (get(setting) !== undefined) {
         action(get(setting));

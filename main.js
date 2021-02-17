@@ -3,7 +3,7 @@ import { SerialConnection } from './serial.js';
 import { Parser } from './parser.js';
 import { Renderer as OldRenderer } from './renderer.js';
 import { Renderer as GlRenderer } from './gl-renderer.js';
-import { show, hide, toggle, appendButton } from './util.js';
+import { show, hide, toggle, appendButton, on } from './util.js';
 import { setup as setupWorker } from './worker-setup.js';
 
 import * as Input from './input.js';
@@ -71,7 +71,7 @@ let resizeCanvas = (function() {
         }
     }
 
-    window.addEventListener('resize', resize);
+    on(window, 'resize', resize);
     window.matchMedia('screen and (min-resolution: 2dppx)')
         .addListener(resize);
 
@@ -80,7 +80,7 @@ let resizeCanvas = (function() {
     return resize;
 })();
 
-Settings.on('showControls', value => {
+Settings.onChange('showControls', value => {
     document
         .getElementById('display')
         .classList
@@ -88,25 +88,25 @@ Settings.on('showControls', value => {
     resizeCanvas();
 });
 
-Settings.on('enableAudio', value => {
+Settings.onChange('enableAudio', value => {
     if (value) { Audio.enable(); }
     else { Audio.disable(); }
 });
 
-Settings.on('snapPixels', () => resizeCanvas());
+Settings.onChange('snapPixels', () => resizeCanvas());
 
-Settings.on('controlMapping', () => {
+Settings.onChange('controlMapping', () => {
     hide('#info');
     Input.startMapping().then(resizeCanvas);
     resizeCanvas();
 });
 
-Settings.on('firmware', () => {
+Settings.onChange('firmware', () => {
     hide('#info');
     Firmware.open();
 });
 
-Settings.on('fullscreen', () => {
+Settings.onChange('fullscreen', () => {
     if (document.fullscreenElement) {
         document.exitFullscreen();
     } else {
@@ -114,7 +114,7 @@ Settings.on('fullscreen', () => {
     }
 });
 
-Settings.on('about', () => show('#info'));
+Settings.onChange('about', () => show('#info'));
 
 function updateDisplay(isConnected) {
     if (isConnected) {
@@ -139,7 +139,7 @@ if (navigator.serial) {
                 show('#serial-fail');
             }));
 
-    window.addEventListener('beforeunload', e =>
+    on(window, 'beforeunload', e =>
         connection.disconnect());
 
     connection.connect(true).catch(() => {});
@@ -161,8 +161,6 @@ if (navigator.serial) {
     show('#no-serial-usb');
 }
 
-document
-    .querySelector('#info button')
-    .addEventListener('click', () => hide('#info'));
+on('#info button', 'click', () => hide('#info'));
 
 setupWorker();
