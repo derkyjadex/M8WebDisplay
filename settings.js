@@ -12,6 +12,7 @@ const actions = {};
 const values = {};
 
 setupToggle('showControls', 'Show Controls', true);
+setupToggle('hideMenu', 'Hide Menu', false);
 setupToggle('enableAudio', 'Enable Audio', true);
 
 setupSelect(
@@ -25,6 +26,11 @@ setupButton('controlMapping', 'Control Mapping');
 setupButton('firmware', 'Load Firmware');
 setupButton('fullscreen', 'Fullscreen');
 setupButton('about', 'About');
+
+onChange('hideMenu', value => document
+    .getElementById('settings')
+    .classList
+    .toggle('auto-hide', value));
 
 function setupToggle(setting, title, defaultValue) {
     const value = load(setting, defaultValue);

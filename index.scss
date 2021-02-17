@@ -334,6 +334,18 @@ $menu-time: 80ms;
         }
     }
 
+    &.hidden.auto-hide {
+        #menu-button {
+            opacity: 0%;
+            transition: opacity 0.8s linear 0.8s;
+
+            &:hover, &:focus {
+                opacity: 100%;
+                transition: opacity 0s;
+            }
+        }
+    }
+
     #menu-button {
         width: 32px;
         height: 32px;
