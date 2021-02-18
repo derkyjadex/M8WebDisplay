@@ -13,6 +13,7 @@ This is still a work in progress. The following have been implemented so far:
 - Keyboard and gamepad input
 - Custom key/button mapping
 - Touch-compatible on-screen keys
+- Firmware loader
 - Full offline support
 - Installable as a [PWA](https://en.wikipedia.org/wiki/Progressive_web_application)
 
@@ -36,7 +37,8 @@ As a temporary alternative the code can fallback to using the WebUSB API, which 
 
 ## TODO/Ideas
 
-- Teensy firmware loader
+- Avoid/automatically recover from bad frames
+- Auto-reboot for firmware loader/real M8 support
 - Selectable audio output device
 
 ## Licence
