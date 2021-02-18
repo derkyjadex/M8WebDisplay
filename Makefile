@@ -7,6 +7,11 @@ DEPLOY = \
 	app.webmanifest \
 	build/icon.png
 
+CACHE_FILES = \
+	build/index.html \
+	build/icon.png \
+	app.webmanifest
+
 DEPLOY_DIR = deploy/
 
 NPM = node_modules/
@@ -37,10 +42,10 @@ build/main.js: js/main.js $(NPM)
 	@npx rollup $< \
 	  | npx terser --mangle --toplevel --compress > $@
 
-build/worker.js: js/worker.js build/index.html $(NPM)
+build/worker.js: js/worker.js $(CACHE_FILES) $(NPM)
 	@echo Building $@
 	@mkdir -p $(@D)
-	@sed "s/INDEXHASH/`md5 -q build/index.html`/" $< \
+	@sed "s/INDEXHASH/$$(cat $(CACHE_FILES) | md5)/" $< \
 	  | npx terser --mangle --compress > $@
 
 css/index.scss: $(filter-out css/index.scss,$(wildcard css/*.scss)) build/font.scss
@@ -59,11 +64,12 @@ build/index.css: css/index.scss $(NPM)
 	@mkdir -p $(@D)
 	@npx sass --style=compressed $< > $@
 
-build/index.html: index.html build/index.css build/main.js $(NPM)
+build/index.html: index.html build/index.css build/main.js favicon.png $(NPM)
 	@echo Building $@
 	@mkdir -p $(@D)
 	@sed -e 's/"build\/index.css"/"index.css"/' $< \
 	 | sed -e 's/"js\/main.js"/"main.js"/' \
+	 | sed -e 's|"favicon.png"|"data:image/png;base64,'$$(npx imagemin favicon.png | base64)'"|' \
 	 | sed -e 's/^ *//' \
 	 | perl -0pe 's/>[ \t\r\n]+</></g' > $@.tmp
 	@npx juice \
@@ -87,7 +93,7 @@ clean:
 	@$(RM) -r build/*
 
 run: index.html $(NPM)
-	@npx ws --log.format dev
+	@npx ws --log.format dev --https --rewrite '/worker.js -> /js/worker.js'
 
 deploy: $(DEPLOY)
 	@echo Deploying

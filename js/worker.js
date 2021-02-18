@@ -6,7 +6,7 @@ const cacheName = 'INDEXHASH';
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(cacheName)
-            .then(cache => cache.add('.')));
+            .then(cache => cache.addAll(['.', 'icon.png', 'app.webmanifest'])));
 });
 
 self.addEventListener('activate', event =>

@@ -14,7 +14,7 @@ on('#settings', 'click', e => {
 const actions = {};
 const values = {};
 
-setupToggle('showControls', 'Show Controls', true);
+setupToggle('showControls', 'Show Controls', false);
 setupToggle('hideMenu', 'Hide Menu', false);
 setupToggle('enableAudio', 'Enable Audio', true);
 
