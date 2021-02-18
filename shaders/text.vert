@@ -1,7 +1,6 @@
+#version 300 es
 // Copyright 2021 James Deery
 // Released under the MIT licence, https://opensource.org/licenses/MIT
-
-#version 300 es
 
 layout(location = 0) in vec3 colour;
 layout(location = 1) in float char;
