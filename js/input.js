@@ -1,3 +1,6 @@
+// Copyright 2021 James Deery
+// Released under the MIT licence, https://opensource.org/licenses/MIT
+
 import { appendButton } from './util.js';
 import * as Settings from './settings.js';
 

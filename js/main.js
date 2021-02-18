@@ -1,3 +1,6 @@
+// Copyright 2021 James Deery
+// Released under the MIT licence, https://opensource.org/licenses/MIT
+
 import { UsbConnection } from './usb.js';
 import { SerialConnection } from './serial.js';
 import { Parser } from './parser.js';

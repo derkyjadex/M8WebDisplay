@@ -1,3 +1,6 @@
+// Copyright 2021 James Deery
+// Released under the MIT licence, https://opensource.org/licenses/MIT
+
 #version 300 es
 
 layout(location = 0) in vec4 shape;

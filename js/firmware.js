@@ -1,3 +1,6 @@
+// Copyright 2021 James Deery
+// Released under the MIT licence, https://opensource.org/licenses/MIT
+
 import { show, hide, toggle, on, wait } from './util.js';
 import { readHexToBlocks } from './hex.js';
 

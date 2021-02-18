@@ -1,3 +1,6 @@
+// Copyright 2021 James Deery
+// Released under the MIT licence, https://opensource.org/licenses/MIT
+
 import { show, hide, on } from './util.js';
 
 const updateInterval = 30 * 60 * 1000;

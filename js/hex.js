@@ -1,3 +1,6 @@
+// Copyright 2021 James Deery
+// Released under the MIT licence, https://opensource.org/licenses/MIT
+
 const START_LINE = Symbol('START_LINE');
 const HEX1 = Symbol('HEX1');
 const HEX2 = Symbol('HEX2');

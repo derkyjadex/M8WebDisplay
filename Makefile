@@ -1,3 +1,6 @@
+# Copyright 2021 James Deery
+# Released under the MIT licence, https://opensource.org/licenses/MIT
+
 DEPLOY = \
 	build/index.html \
 	build/worker.js \
@@ -19,7 +22,8 @@ build/shaders.js: $(wildcard shaders/*.vert) $(wildcard shaders/*.frag)
 	@mkdir -p $(@D)
 	@for i in $^; do \
 	  printf "export const $$(basename $${i} | tr . _) = \`"; \
-	  perl -0pe 's/([\n;,{}()\[\]=+\-*\/])[ \t\r\n]+/$$1/g' $$i; \
+	  sed 's/\/\/.*$$//g' $$i \
+	   | perl -0pe 's/([\n;,{}()\[\]=+\-*\/])[ \t\r\n]+/$$1/g'; \
 	  echo "\`;"; \
 	done > $@
 
