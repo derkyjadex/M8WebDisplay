@@ -13,9 +13,8 @@ NPM = node_modules/
 
 index.html: build/index.css js/main.js
 
-js/main.js: $(filter-out js/main.js,$(wildcard js/*.js))
-
-js/gl-renderer.js: build/shaders.js build/font.js
+js/main.js: $(filter-out js/main.js,$(wildcard js/*.js)) build/shaders.js build/font.js
+	@touch $@
 
 build/shaders.js: $(wildcard shaders/*.vert) $(wildcard shaders/*.frag)
 	@echo Building $@
@@ -44,7 +43,8 @@ build/worker.js: js/worker.js build/index.html $(NPM)
 	@sed "s/INDEXHASH/`md5 -q build/index.html`/" $< \
 	  | npx terser --mangle --compress > $@
 
-css/index.scss: $(filter-out css/index.scss,$(css/*.scss)) build/font.scss
+css/index.scss: $(filter-out css/index.scss,$(wildcard css/*.scss)) build/font.scss
+	@touch $@
 
 build/font.scss: stealth57.woff2
 	@echo Building $@
