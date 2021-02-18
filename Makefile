@@ -63,7 +63,9 @@ build/index.html: index.html build/index.css build/main.js $(NPM)
 	@echo Building $@
 	@mkdir -p $(@D)
 	@sed -e 's/"build\/index.css"/"index.css"/' $< \
-	 | sed -e 's/"js\/main.js"/"main.js"/' > $@.tmp
+	 | sed -e 's/"js\/main.js"/"main.js"/' \
+	 | sed -e 's/^ *//' \
+	 | perl -0pe 's/>[ \t\r\n]+</></g' > $@.tmp
 	@npx juice \
 	  --apply-style-tags false \
 	  --remove-style-tags false \
