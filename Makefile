@@ -5,7 +5,7 @@ DEPLOY = \
 	build/index.html \
 	build/worker.js \
 	app.webmanifest \
-	icon.png
+	build/icon.png
 
 DEPLOY_DIR = deploy/
 
@@ -71,6 +71,10 @@ build/index.html: index.html build/index.css build/main.js $(NPM)
 	  --remove-style-tags false \
 	  $@.tmp $@
 	@rm $@.tmp
+
+build/icon.png: icon.png
+	@echo Building $@
+	@npx imagemin $< > $@
 
 $(NPM):
 	@echo Installing node packages
