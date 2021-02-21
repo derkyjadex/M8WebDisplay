@@ -127,9 +127,10 @@ export class Renderer {
             this._rectColours[i * 12 + 1] = g;
             this._rectColours[i * 12 + 2] = b;
             this._rectCount++;
+        }
 
-        } else {
-            console.warn('Out of rects!');
+        if (this._rectCount >= MAX_RECTS) {
+            this._renderRects(this._gl);
         }
 
         this._queueFrame();
