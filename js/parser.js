@@ -5,6 +5,8 @@ const NORMAL = Symbol('normal');
 const ESCAPE = Symbol('escape');
 const ERROR = Symbol('error');
 
+const EMPTY = new Uint8Array(0);
+
 export class Parser {
     _state = NORMAL;
     _buffer = new Uint8Array(512);
@@ -18,7 +20,7 @@ export class Parser {
     _processFrame(frame) {
         switch (frame[0]) {
             case 0xfe:
-                if (frame.length >= 12) {
+                if (frame.length === 12) {
                     this._renderer.drawRect(
                         frame[1] + frame[2] * 256,
                         frame[3] + frame[4] * 256,
@@ -27,13 +29,14 @@ export class Parser {
                         frame[9],
                         frame[10],
                         frame[11]);
+
                 } else {
                     console.log('Bad RECT frame');
                 }
                 break;
 
             case 0xfd:
-                if (frame.length >= 9) {
+                if (frame.length === 12) {
                     this._renderer.drawText(
                         frame[1],
                         frame[2] + frame[3] * 256,
@@ -41,24 +44,36 @@ export class Parser {
                         frame[6],
                         frame[7],
                         frame[8]);
+
                 } else {
                     console.log('Bad TEXT frame');
                 }
                 break;
 
             case 0xfc: // wave
-                if (frame.length >= 4) {
+                if (frame.length === 4) {
+                    this._renderer.drawWave(
+                        frame[1],
+                        frame[2],
+                        frame[3],
+                        EMPTY);
+
+                } else if (frame.length === 324) {
                     this._renderer.drawWave(
                         frame[1],
                         frame[2],
                         frame[3],
                         frame.subarray(4));
+
                 } else {
                     console.log('Bad WAVE frame');
                 }
                 break;
 
             case 0xfb: // joypad
+                if (frame.length !== 2) {
+                    console.log('Bad JPAD frame');
+                }
                 break;
 
             default:
