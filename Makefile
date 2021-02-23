@@ -82,6 +82,52 @@ build/icon.png: icon.png
 	@echo Building $@
 	@npx imagemin $< > $@
 
+cert/cert.conf: $(NPM)
+	@echo Building $@
+	@mkdir -p cert
+	@echo "[req]\n\
+	distinguished_name=dn\n\
+	req_extensions=ext\n\
+	prompt=no\n\
+	[dn]\n\
+	CN=DevCert\n\
+	OU=DEV\n\
+	[ext]\n\
+	keyUsage=nonRepudiation,digitalSignature,keyEncipherment\n\
+	basicConstraints=critical,CA:TRUE,pathlen:0\n\
+	subjectAltName=DNS:localhost,$$(\
+	  npx ws --list-network-interfaces \
+	   | grep '^-' \
+	   | sed -E 's/^- .+: ([0-9.]+)$$/IP:\1/g' \
+	   | sed -E 's/^- .+: (.+)$$/DNS:\1/g' \
+	   | paste -sd ',' -)" > $@
+
+cert/private-key.pem:
+	@echo Building $@
+	@mkdir -p cert
+	@openssl genrsa -out $@ 2048
+
+cert/server.csr: cert/private-key.pem cert/cert.conf
+	@echo Building $@
+	@openssl req \-new \
+	  -nodes \
+	  -sha256 \
+	  -key cert/private-key.pem \
+	  -config cert/cert.conf \
+	  -out $@
+
+cert/server.crt: cert/private-key.pem cert/cert.conf cert/server.csr
+	@echo Building $@
+	@openssl x509 \
+	  -req \
+	  -sha256 \
+	  -days 90 \
+	  -in cert/server.csr \
+	  -signkey cert/private-key.pem \
+	  -extfile cert/cert.conf \
+	  -extensions ext \
+	  -out $@
+
 $(NPM):
 	@echo Installing node packages
 	@npm install
@@ -92,8 +138,13 @@ clean:
 	@echo Cleaning
 	@$(RM) -r build/*
 
-run: index.html $(NPM)
-	@npx ws --log.format dev --https --rewrite '/worker.js -> /js/worker.js'
+run: index.html cert/private-key.pem cert/server.crt $(NPM)
+	@npx ws \
+		--log.format dev \
+		--rewrite '/worker.js -> /js/worker.js' \
+		--blacklist /cert/private-key.pem \
+		--key cert/private-key.pem \
+		--cert cert/server.crt
 
 deploy: $(DEPLOY)
 	@echo Deploying
