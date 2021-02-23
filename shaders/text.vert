@@ -28,5 +28,5 @@ void main() {
 
     gl_Position = vec4(char == 0.0 ? vec2(2.0) : pos, 0.0, 1.0);
     colourV = colour;
-    fontCoord = (vec2(char - 1.0, 0.0) + corners[gl_VertexID]) * vec2(5.0, 7.0);
+    fontCoord = (vec2(char - 1.0, 0.0) + corners[gl_VertexID]) * size;
 }
