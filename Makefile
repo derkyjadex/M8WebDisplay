@@ -138,6 +138,7 @@ clean:
 	@echo Cleaning
 	@$(RM) -r build/*
 
+ifeq ($(HTTPS),true)
 run: index.html cert/private-key.pem cert/server.crt $(NPM)
 	@npx ws \
 		--log.format dev \
@@ -145,6 +146,13 @@ run: index.html cert/private-key.pem cert/server.crt $(NPM)
 		--blacklist /cert/private-key.pem \
 		--key cert/private-key.pem \
 		--cert cert/server.crt
+else
+run: index.html $(NPM)
+	@npx ws \
+		--log.format dev \
+		--rewrite '/worker.js -> /js/worker.js' \
+		--blacklist /cert/private-key.pem
+endif
 
 deploy: $(DEPLOY)
 	@echo Deploying
