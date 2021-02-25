@@ -18,8 +18,10 @@ NPM = node_modules/
 
 ifeq ($(shell uname -s),Darwin)
 	BASE64 = base64
+	MD5 = md5
 else
 	BASE64 = base64 -w0
+	MD5 = md5sum
 endif
 
 
@@ -52,7 +54,7 @@ build/main.js: js/main.js $(NPM)
 build/worker.js: js/worker.js $(CACHE_FILES) $(NPM)
 	@echo Building $@
 	@mkdir -p $(@D)
-	@sed "s/INDEXHASH/$$(cat $(CACHE_FILES) | md5)/" $< \
+	@sed "s/INDEXHASH/$$(cat $(CACHE_FILES) | $(MD5))/" $< \
 	  | npx terser --mangle --compress > $@
 
 css/index.scss: $(filter-out css/index.scss,$(wildcard css/*.scss)) build/font.scss
