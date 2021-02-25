@@ -16,6 +16,13 @@ DEPLOY_DIR = deploy/
 
 NPM = node_modules/
 
+ifeq ($(shell uname -s),Darwin)
+	BASE64 = base64
+else
+	BASE64 = base64 -w0
+endif
+
+
 index.html: build/index.css js/main.js
 
 js/main.js: $(filter-out js/main.js,$(wildcard js/*.js)) build/shaders.js build/font.js
@@ -34,7 +41,7 @@ build/shaders.js: $(wildcard shaders/*.vert) $(wildcard shaders/*.frag)
 build/font.js: font.png
 	@echo Building $@
 	@mkdir -p $(@D)
-	@echo "export const font = 'data:image/png;base64,$$(npx imagemin $^ | base64)';" > $@
+	@echo "export const font = 'data:image/png;base64,$$(npx imagemin $^ | $(BASE64))';" > $@
 
 build/main.js: js/main.js $(NPM)
 	@echo Building $@
@@ -56,7 +63,7 @@ build/font.scss: stealth57.woff2
 	@mkdir -p $(@D)
 	@echo "@font-face {\n\
 	    font-family: 'stealth57';\n\
-	    src: url('data:font/woff2;base64,$$(base64 $^)') format('woff2');\n\
+	    src: url('data:font/woff2;base64,$$($(BASE64) $^)') format('woff2');\n\
 	}" > $@
 
 build/index.css: css/index.scss $(NPM)
@@ -69,7 +76,7 @@ build/index.html: index.html build/index.css build/main.js favicon.png $(NPM)
 	@mkdir -p $(@D)
 	@sed -e 's/"build\/index.css"/"index.css"/' $< \
 	 | sed -e 's/"js\/main.js"/"main.js"/' \
-	 | sed -e 's|"favicon.png"|"data:image/png;base64,'$$(npx imagemin favicon.png | base64)'"|' \
+	 | sed -e 's|"favicon.png"|"data:image/png;base64,'$$(npx imagemin favicon.png | $(BASE64))'"|' \
 	 | sed -e 's/^ *//' \
 	 | perl -0pe 's/>[ \t\r\n]+</></g' > $@.tmp
 	@npx juice \
@@ -136,7 +143,7 @@ all: $(DEPLOY)
 
 clean:
 	@echo Cleaning
-	@$(RM) -r build/*
+	@rm -r build/*
 
 ifeq ($(HTTPS),true)
 run: index.html cert/private-key.pem cert/server.crt $(NPM)
