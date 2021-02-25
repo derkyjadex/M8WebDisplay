@@ -37,7 +37,7 @@ As a temporary alternative the code can fallback to using the WebUSB API, which 
 
 ## Developing
 
-To build this project you need a standard unix-like environment and a recent-ish version of [Node.js](https://nodejs.org/) (15.6 works, earlier versions might not). You should be able to build on macOS, Linux and (WSL)[https://docs.microsoft.com/en-us/windows/wsl/] on Windows.
+To build this project you need a standard unix-like environment and a recent-ish version of [Node.js](https://nodejs.org/) (15.6 works, earlier versions might not). You should be able to build on macOS, Linux and [WSL](https://docs.microsoft.com/en-us/windows/wsl/) on Windows.
 
 From a fresh clone, run this in your terminal:
 
