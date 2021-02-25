@@ -137,7 +137,7 @@ cert/server.crt: cert/private-key.pem cert/cert.conf cert/server.csr
 
 $(NPM):
 	@echo Installing node packages
-	@npm install
+	@npm ci
 
 all: $(DEPLOY)
 
