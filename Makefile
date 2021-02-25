@@ -43,7 +43,7 @@ build/shaders.js: $(wildcard shaders/*.vert) $(wildcard shaders/*.frag)
 build/font.js: font.png
 	@echo Building $@
 	@mkdir -p $(@D)
-	@echo "export const font = 'data:image/png;base64,$$(npx imagemin $^ | $(BASE64))';" > $@
+	@echo "export const font = 'data:image/png;base64,$$(npx imagemin $^ -p optipng | $(BASE64))';" > $@
 
 build/main.js: js/main.js $(NPM)
 	@echo Building $@
@@ -78,7 +78,7 @@ build/index.html: index.html build/index.css build/main.js favicon.png $(NPM)
 	@mkdir -p $(@D)
 	@sed -e 's/"build\/index.css"/"index.css"/' $< \
 	 | sed -e 's/"js\/main.js"/"main.js"/' \
-	 | sed -e 's|"favicon.png"|"data:image/png;base64,'$$(npx imagemin favicon.png | $(BASE64))'"|' \
+	 | sed -e 's|"favicon.png"|"data:image/png;base64,'$$(npx imagemin favicon.png -p optipng | $(BASE64))'"|' \
 	 | sed -e 's/^ *//' \
 	 | perl -0pe 's/>[ \t\r\n]+</></g' > $@.tmp
 	@npx juice \
@@ -89,7 +89,7 @@ build/index.html: index.html build/index.css build/main.js favicon.png $(NPM)
 
 build/icon.png: icon.png
 	@echo Building $@
-	@npx imagemin $< > $@
+	@npx imagemin $< -p optipng > $@
 
 cert/cert.conf: $(NPM)
 	@echo Building $@
