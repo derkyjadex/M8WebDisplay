@@ -135,7 +135,7 @@ if (navigator.serial) {
     const connection = new SerialConnection(parser, updateDisplay);
     Input.setup(connection);
 
-    appendButton('#buttons', 'Connect', () =>
+    on('#connect', 'click', () =>
         connection.connect()
             .catch(() => {
                 hide('#info');
@@ -151,7 +151,7 @@ if (navigator.serial) {
     const connection = new UsbConnection(parser, updateDisplay);
     Input.setup(connection);
 
-    appendButton('#buttons', 'Connect with WebUSB', () =>
+    on('#connect', 'click', () =>
         connection.connect()
             .catch(() => {
                 hide('#info');
