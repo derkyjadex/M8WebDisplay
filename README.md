@@ -4,9 +4,9 @@ This is alternative frontend for [M8 Headless](https://github.com/DirtyWave/M8He
 
 It runs entirely in the browser and only needs to be hosted on a server to satisfy browser security policies. No network communication is involved.
 
-Try it out at https://derkyjadex.github.io/M8WebDisplay/. **Use at your own risk.**
+Try it out at https://derkyjadex.github.io/M8WebDisplay/.
 
-This is still a work in progress. The following have been implemented so far:
+Features:
 
 - Render the M8 display
 - Route M8's audio out to the default audio output
@@ -21,15 +21,11 @@ This is still a work in progress. The following have been implemented so far:
 
 The following should generally work, details are below.
 
-- Chrome on macOS
-- Chrome on Windows, with experimental flag
-- Edge on Windows, with experimental flag
-- Chrome on Linux\*, with experimental flag
+- Chrome 89+ on macOS, Windows and Linux\*
+- Edge 89+ on Windows
 - Chrome on Android, without audio\*\*
 
-This relies on the Web Serial API to communicate with the M8. This API is currently only supported by Google Chrome as an experimental feature. It is due to be fully available in the [next Chrome release](https://www.chromestatus.com/features/schedule) on 2nd March 2021. Until then you can enable it by going to `chrome://flags` and enabling the "Experimental Web Platform features" option.
-
-As a temporary alternative the code can fallback to using the WebUSB API, which is supported in the current version of Chrome. However this only works correctly on macOS and Android due to the way that Windows and Linux load their serial drivers.
+The web display uses the Web Serial API to communicate with the M8. This API is currently only supported by desktop versions of Google Chrome and Microsoft Edge in versions 89 or later. For Chrome on Android the code can fallback to using the WebUSB API.
 
 \*On Ubuntu and Debian systems (and perhaps others) users do not have permission to access the M8's serial port by default. You will need to add yourself to the `dialout` group and restart your login session/reboot. After this you should be able to connect normally.
 
