@@ -24,6 +24,7 @@ The following should generally work, details are below.
 - Chrome on macOS
 - Chrome on Windows, with experimental flag
 - Edge on Windows, with experimental flag
+- Edge on OSX
 - Chrome on Linux\*, with experimental flag
 - Chrome on Android, without audio\*\*
 
