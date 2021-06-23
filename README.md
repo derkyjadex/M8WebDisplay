@@ -22,7 +22,7 @@ Features:
 The following should generally work, details are below.
 
 - Chrome 89+ on macOS, Windows and Linux\*
-- Edge 89+ on Windows
+- Edge 89+ on macOS and Windows
 - Chrome on Android, without audio\*\*
 
 The web display uses the Web Serial API to communicate with the M8. This API is currently only supported by desktop versions of Google Chrome and Microsoft Edge in versions 89 or later. For Chrome on Android the code can fallback to using the WebUSB API.
