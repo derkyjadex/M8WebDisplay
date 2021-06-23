@@ -71,7 +71,7 @@ export class Parser {
                 break;
 
             case 0xfb: // joypad
-                if (frame.length !== 2) {
+                if (frame.length !== 3) {
                     console.log('Bad JPAD frame');
                 }
                 break;
