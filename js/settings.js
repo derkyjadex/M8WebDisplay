@@ -25,6 +25,7 @@ setupSelect(
     'webgl2');
 
 setupToggle('snapPixels', 'Snap Pixels', true);
+setupToggle('virtualKeyboard', 'Virtual Keyboard', true);
 setupButton('controlMapping', 'Control Mapping');
 setupButton('firmware', 'Load Firmware');
 setupButton('fullscreen', 'Fullscreen');

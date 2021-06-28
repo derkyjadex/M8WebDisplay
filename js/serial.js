@@ -46,16 +46,28 @@ export class SerialConnection {
         }
     }
 
-    async sendKeys(state) {
+    async _send(msg) {
         if (!this._port || !this._port.writer)
             return;
 
         try {
-            await this._port.writer.write(new Uint8Array([0x43, state]));
+            await this._port.writer.write(new Uint8Array(msg));
         } catch (err) {
             console.error(err);
             this.disconnect();
         }
+    }
+
+    async sendKeys(state) {
+        this._send([0x43, state]);
+    }
+
+    async sendNoteOn(note, vel) {
+        this._send([0x4B, note, vel]);
+    }
+
+    async sendNoteOff() {
+        this._send([0x4B, 255]);
     }
 
     async _reset() {

@@ -3,6 +3,7 @@
 
 import { appendButton } from './util.js';
 import * as Settings from './settings.js';
+import * as Keyboard from './keyboard.js';
 
 let connection;
 let keyState = 0;
@@ -59,6 +60,9 @@ function handleInput(input, isDown, e) {
         return;
     }
 
+    if (Keyboard.handleKey(input, isDown, e))
+        return;
+
     handleAction(inputMap[input], isDown, e);
 }
 
@@ -100,6 +104,8 @@ function handleAction(action, isDown, e) {
 
 export function setup(connection_) {
     connection = connection_;
+
+    Keyboard.setup(connection);
 
     document.addEventListener('keydown', e =>
         handleInput(e.code, true, e));
