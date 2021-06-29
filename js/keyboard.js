@@ -35,7 +35,7 @@ let vel = 103;
 let currentKey = null;
 
 export function handleKey(input, isDown, e) {
-    if (!enabled || e.ctrlKey || e.metaKey || e.altKey)
+    if (!enabled || !e || e.ctrlKey || e.metaKey || e.altKey)
         return false;
 
     const key = keyMap[input];
