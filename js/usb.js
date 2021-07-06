@@ -34,16 +34,28 @@ export class UsbConnection {
         }
     }
 
-    async sendKeys(state) {
+    async _send(msg) {
         if (!this._device)
             return;
 
         try {
-            await this._device.transferOut(3, new Uint8Array([0x43, state]));
+            await this._device.transferOut(3, new Uint8Array(msg));
         } catch (err) {
             console.error(err);
             this.disconnect();
         }
+    }
+
+    async sendKeys(state) {
+        this._send([0x43, state]);
+    }
+
+    async sendNoteOn(note, vel) {
+        this._send([0x4B, note, vel]);
+    }
+
+    async sendNoteOff() {
+        this._send([0x4B, 255]);
     }
 
     async _reset() {
