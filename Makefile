@@ -60,11 +60,11 @@ build/worker.js: js/worker.js $(CACHE_FILES) $(NPM)
 css/index.scss: $(filter-out css/index.scss,$(wildcard css/*.scss)) build/font.scss
 	@touch $@
 
-build/font.scss: stealth57.woff2
+build/font.scss: m8stealth57.woff2
 	@echo Building $@
 	@mkdir -p $(@D)
 	@printf "@font-face {\n\
-	    font-family: 'stealth57';\n\
+	    font-family: 'm8stealth57';\n\
 	    src: url('data:font/woff2;base64,$$($(BASE64) $^)') format('woff2');\n\
 	}" > $@
 
