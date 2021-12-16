@@ -63,7 +63,7 @@ css/index.scss: $(filter-out css/index.scss,$(wildcard css/*.scss)) build/font.s
 build/font.scss: m8stealth57.woff2
 	@echo Building $@
 	@mkdir -p $(@D)
-	@echo "@font-face {\n\
+	@printf "@font-face {\n\
 	    font-family: 'm8stealth57';\n\
 	    src: url('data:font/woff2;base64,$$($(BASE64) $^)') format('woff2');\n\
 	}" > $@
