@@ -6,8 +6,8 @@
 #display {
     position: relative;
     width: 100vw;
-    height: 100vw * 3 / 4;
-    max-width: 100vh * 4 / 3;
+    height: calc(100vw * 3 / 4);
+    max-width: calc(100vh * 4 / 3);
     max-height: 100vh;
     margin: 0 auto;
     top: 0;
@@ -59,8 +59,8 @@
     }
 
     &.with-controls, body.mapping & {
-        height: 100vw * 6 / 4;
-        max-width: 100vh * 4 / 6;
+        height: calc(100vw * 6 / 4);
+        max-width: calc(100vh * 4 / 6);
 
         canvas, svg {
             height: 50%;
