@@ -89,9 +89,11 @@
             padding: 5px;
             text-align: center;
             font-size: 80%;
+            transition: border-color 200ms;
 
             &.active {
                 border-color: $m8;
+                transition-duration: 0s;
             }
 
             &.mapping {

@@ -75,7 +75,6 @@ function handleControl(isDown, e) {
         startMapKey(e.target, action);
 
     } else {
-        e.target.classList.toggle('active', isDown);
         handleAction(action, isDown, e);
     }
 }
@@ -100,6 +99,11 @@ function handleAction(action, isDown, e) {
     keyState = newState;
 
     connection.sendKeys(keyState);
+
+    document
+        .querySelector(`#controls > [data-action="${action}"]`)
+        .classList
+        .toggle('active', isDown);
 }
 
 export function setup(connection_) {
