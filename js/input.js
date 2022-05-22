@@ -170,13 +170,13 @@ function pollGamepads() {
         if (!state) {
             state = gamepadStates[gamepad.index] = {
                 buttons: [],
-                axes: []
+                axes: Array(gamepad.axes.length).fill(null).map(_ => ({}))
             };
         }
 
         if (gamepad.mapping !== 'standard') {
             for (let i = 0; i < gamepad.axes.length; i++) {
-                if (state.axes[i] === false)
+                if (state.axes[i].isHat === false)
                     continue;
 
                 // Heuristics to locate a d-pad or
@@ -185,12 +185,16 @@ function pollGamepads() {
                 const error = Math.abs(Math.round(value) - value);
                 const hatPosition = hatMap[Math.round(value)];
                 if (error > 4.8e-7 || hatPosition === undefined) {
-                    state.axes[i] = false;
+                    // definitely not a hat based on this value
+                    state.axes[i].isHat = false;
                     continue;
-                } else if (value === 0 && state.axes[i] !== true) {
+                } else if (value === 0 && state.axes[i].isHat !== true) {
+                    // could be a hat but could also be an unpressed trigger
                     continue;
                 } else {
-                    state.axes[i] = true;
+                    // almost certainly a hat - we're very close to a "special"
+                    // value and we haven't seen any invalid values
+                    state.axes[i].isHat = true;
                 }
 
                 for (let b = 0; b < 4; b++) {
@@ -200,6 +204,23 @@ function pollGamepads() {
                         handleInput(`Gamepad${64 + b}`, pressed);
                     }
                 }
+            }
+        }
+
+        for (let i = 0; i < gamepad.axes.length; i++) {
+            const value = gamepad.axes[i];
+            if (state.axes[i].isHat === true || Math.abs(value) > 1)
+                continue;
+
+            const negative = value <= -0.5;
+            const positive = value >= 0.5;
+            if (state.axes[i].negative !== negative) {
+                state.axes[i].negative = negative;
+                handleInput(`GamepadAxis${i}-`, negative);
+            }
+            if (state.axes[i].positive !== positive) {
+                state.axes[i].positive = positive;
+                handleInput(`GamepadAxis${i}+`, positive);
             }
         }
 
