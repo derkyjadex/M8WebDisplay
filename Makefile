@@ -43,7 +43,7 @@ build/shaders.js: $(wildcard shaders/*.vert) $(wildcard shaders/*.frag)
 build/font.js: font.png
 	@echo Building $@
 	@mkdir -p $(@D)
-	@echo "export const font = 'data:image/png;base64,$$(npx imagemin $^ -p optipng | $(BASE64))';" > $@
+	@printf "export const font = 'data:image/png;base64,$$(npx imagemin $^ -p optipng | $(BASE64))';" > $@
 
 build/main.js: js/main.js $(NPM)
 	@echo Building $@
