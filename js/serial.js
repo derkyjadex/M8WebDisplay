@@ -1,4 +1,4 @@
-// Copyright 2021 James Deery
+// Copyright 2021-2022 James Deery
 // Released under the MIT licence, https://opensource.org/licenses/MIT
 
 import { wait } from './util.js';
