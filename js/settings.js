@@ -26,6 +26,7 @@ setupSelect(
 
 setupToggle('snapPixels', 'Snap Pixels', true);
 setupToggle('virtualKeyboard', 'Virtual Keyboard', true);
+setupToggle('preventSleep', 'Prevent Sleep', false);
 setupButton('controlMapping', 'Control Mapping');
 setupButton('firmware', 'Load Firmware');
 setupButton('fullscreen', 'Fullscreen');

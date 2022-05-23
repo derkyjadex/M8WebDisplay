@@ -13,6 +13,7 @@ import * as Input from './input.js';
 import * as Audio from './audio.js';
 import * as Settings from './settings.js';
 import * as Firmware from './firmware.js';
+import * as Wake from './wake.js';
 
 function setBackground(r, g, b) {
     const colour = `rgb(${r}, ${g}, ${b})`;
@@ -119,7 +120,7 @@ Settings.onChange('fullscreen', () => {
 
 Settings.onChange('about', () => show('#info'));
 
-function updateDisplay(isConnected) {
+function connectionChanged(isConnected) {
     if (isConnected) {
         hide('#buttons, .error, #info');
         Audio.start(10);
@@ -129,10 +130,12 @@ function updateDisplay(isConnected) {
         show('#buttons');
         Audio.stop();
     }
+
+    Wake.connectionChanged(isConnected);
 }
 
 if (navigator.serial) {
-    const connection = new SerialConnection(parser, updateDisplay);
+    const connection = new SerialConnection(parser, connectionChanged);
     Input.setup(connection);
 
     on('#connect', 'click', () =>
@@ -148,7 +151,7 @@ if (navigator.serial) {
     connection.connect(true).catch(() => {});
 
 } else if (navigator.usb) {
-    const connection = new UsbConnection(parser, updateDisplay);
+    const connection = new UsbConnection(parser, connectionChanged);
     Input.setup(connection);
 
     on('#connect', 'click', () =>
