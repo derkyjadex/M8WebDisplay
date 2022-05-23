@@ -96,13 +96,13 @@ export class SerialConnection {
             return;
 
         try {
-            const ports = await navigator.serial.getPorts();
-            this._port = ports
+            const ports = (await navigator.serial.getPorts())
                 .filter(p => {
                     const info = p.getInfo();
                     return info.usbVendorId === 0x16c0 &&
                         info.usbProductId === 0x048a
-                })[0];
+                });
+            this._port = ports.length === 1 ? ports[0] : null;
 
             if (!this._port) {
                 if (autoConnecting) {
