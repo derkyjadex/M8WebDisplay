@@ -89,11 +89,33 @@
             padding: 5px;
             text-align: center;
             font-size: 80%;
-            transition: border-color 200ms;
+            transition-property: border-color, background-color;
+            transition-duration: 200ms;
 
             &.active {
-                border-color: $m8;
+                border-color: #0cf;
+                background-color: #0cf;
                 transition-duration: 0s;
+
+                &[data-action="edit"] {
+                    border-color: #d48;
+                    background-color: #d48;
+                }
+
+                &[data-action="option"] {
+                    border-color: #66c;
+                    background-color: #66c;
+                }
+
+                &[data-action="select"] {
+                    border-color: #d73;
+                    background-color: #d73;
+                }
+
+                &[data-action="start"] {
+                    border-color: #5a3;
+                    background-color: #5a3;
+                }
             }
 
             &.mapping {
