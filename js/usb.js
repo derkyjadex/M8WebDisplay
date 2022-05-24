@@ -130,20 +130,5 @@ export class UsbConnection {
             }
         }
     }
-
-    deviceInfo() {
-        const info = this._device.configuration.interfaces
-            .flatMap(i => i.alternates[0].endpoints.map(ep => ({
-                ifNum: i.interfaceNumber,
-                class: i.alternates[0].interfaceClass,
-                subClass: i.alternates[0].interfaceSubclass,
-                protocol: i.alternates[0].interfaceProtocol,
-                epNum: ep.endpointNumber,
-                epDir: ep.direction,
-                epType: ep.type,
-                epPacketSize: ep.packetSize
-            })));
-        console.table(info);
-    }
 }
 

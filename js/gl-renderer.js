@@ -264,36 +264,6 @@ export class Renderer {
         }
     }
 
-    _randomData() {
-        for (let i = 0; i < 10; i++) {
-            this.drawRect(
-                rand(0, 300),
-                rand(0, 220),
-                rand(5, 25),
-                rand(5, 25),
-                rand(0, 255),
-                rand(0, 255),
-                rand(0, 255));
-        }
-
-        for (let x = 0; x < 320; x += 8) {
-            for (let y = 0; y < 240; y += 10) {
-                this.drawText(
-                    String.fromCharCode(rand(20, 126)),
-                    x, y,
-                    rand(0, 255),
-                    rand(0, 255),
-                    rand(0, 255));
-            }
-        }
-
-        this.drawWave(
-            rand(0, 255),
-            rand(0, 255),
-            rand(0, 255),
-            new Uint8Array(Array(320).fill().map(() => rand(0, 20))));
-    }
-
     _renderFrame() {
         const gl = this._gl;
 
@@ -352,8 +322,4 @@ function buildProgram(gl, name) {
         name,
         compileShader(gl, `${name}_vert`, gl.VERTEX_SHADER),
         compileShader(gl, `${name}_frag`, gl.FRAGMENT_SHADER));
-}
-
-function rand(min, max) {
-    return min + Math.floor(Math.random() * (max - min));
 }

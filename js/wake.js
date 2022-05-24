@@ -36,6 +36,4 @@ async function updateLock() {
             wakeLock = null;
         }
     }
-
-    console.log(wakeLock && !wakeLock.released);
 }
