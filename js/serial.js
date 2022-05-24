@@ -16,7 +16,7 @@ export class SerialConnection {
 
         on(navigator.serial, 'connect', e => {
             if (!this._waitingForUserSelection) {
-                this.connect().catch(() => {});
+                this.connect(true).catch(() => {});
             }
         });
     }

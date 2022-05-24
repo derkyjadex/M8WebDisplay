@@ -1,16 +1,24 @@
-// Copyright 2021 James Deery
+// Copyright 2021-2022 James Deery
 // Released under the MIT licence, https://opensource.org/licenses/MIT
 
-import { wait } from './util.js';
+import { wait, on } from './util.js';
 
 export class UsbConnection {
     _device;
     _parser;
     _onConnectionChanged;
+    _waitingForUserSelection;
 
     constructor(parser, onConnectionChanged) {
         this._parser = parser;
         this._onConnectionChanged = onConnectionChanged;
+        this._waitingForUserSelection = false;
+
+        on(navigator.usb, 'connect', e => {
+            if (!this._waitingForUserSelection) {
+                this.connect(true).catch(() => {});
+            }
+        });
     }
 
     get isConnected() {
@@ -72,28 +80,33 @@ export class UsbConnection {
 
         this._device = null;
 
+        await device.transferOut(3, new Uint8Array([0x44])).catch(() => {});
         await device.close().catch(() => {});
+
         this._onConnectionChanged(false);
     }
 
-    async connect() {
+    async connect(autoConnecting = false) {
         if (this._device)
             return;
 
         try {
-            const devices = await navigator.usb.getDevices();
-            this._device = devices.filter(d =>
-                d.vendorId === 0x16c0 &&
-                d.productId === 0x048a)[0];
+            const devices = (await navigator.usb.getDevices())
+                .filter(d =>
+                    d.vendorId === 0x16c0 &&
+                    d.productId === 0x048a);
+            this._device = devices.length === 1 ? devices[0] : null;
 
             if (!this._device) {
-                this._device = await navigator.usb.requestDevice({
-                    filters: [{
-                        vendorId: 0x16c0,
-                        productId: 0x048a
-                    }]
-                });
+                if (autoConnecting) {
+                    this._onConnectionChanged(false);
+                } else {
+                    this._device = await this._requestDevice();
+                }
             }
+
+            if (!this._device)
+                return;
 
             await this._device.open();
             await this._device.selectConfiguration(1);
@@ -122,12 +135,29 @@ export class UsbConnection {
             this._onConnectionChanged(true);
 
         } catch (err) {
+            console.error(err);
             this.disconnect(err);
+            throw err;
+        }
+    }
 
+    async _requestDevice() {
+        this._waitingForUserSelection = true;
+        try {
+            return await navigator.usb.requestDevice({
+                filters: [{
+                    vendorId: 0x16c0,
+                    productId: 0x048a
+                }]
+            });
+        } catch (err) {
             if (err.code !== DOMException.NOT_FOUND_ERR) {
-                console.error(err);
                 throw err;
+            } else {
+                return null;
             }
+        } finally {
+            this._waitingForUserSelection = false;
         }
     }
 }

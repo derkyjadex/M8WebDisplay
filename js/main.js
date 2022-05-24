@@ -135,36 +135,33 @@ function connectionChanged(isConnected) {
 }
 
 if (navigator.serial) {
-    const connection = new SerialConnection(parser, connectionChanged);
+    setupConnection(
+        new SerialConnection(parser, connectionChanged),
+        '#serial-fail');
+
+} else if (navigator.usb) {
+    setupConnection(
+        new UsbConnection(parser, connectionChanged),
+        '#usb-fail');
+
+} else {
+    show('#no-serial-usb');
+}
+
+function setupConnection(connection, errorMessage) {
     Input.setup(connection);
 
     on('#connect', 'click', () =>
         connection.connect()
             .catch(() => {
                 hide('#info');
-                show('#serial-fail');
+                show(errorMessage);
             }));
 
     on(window, 'beforeunload', e =>
         connection.disconnect());
 
     connection.connect(true).catch(() => {});
-
-} else if (navigator.usb) {
-    const connection = new UsbConnection(parser, connectionChanged);
-    Input.setup(connection);
-
-    on('#connect', 'click', () =>
-        connection.connect()
-            .catch(() => {
-                hide('#info');
-                show('#usb-fail');
-            }));
-
-    show('#buttons');
-
-} else {
-    show('#no-serial-usb');
 }
 
 on('#info button', 'click', () => hide('#info'));
