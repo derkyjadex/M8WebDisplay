@@ -1,7 +1,7 @@
 // Copyright 2021-2022 James Deery
 // Released under the MIT licence, https://opensource.org/licenses/MIT
 
-import { appendButton } from './util.js';
+import { appendButton, on, off } from './util.js';
 import * as Settings from './settings.js';
 import * as Keyboard from './keyboard.js';
 
@@ -111,24 +111,24 @@ export function setup(connection_) {
 
     Keyboard.setup(connection);
 
-    document.addEventListener('keydown', e =>
+    on(document, 'keydown', e =>
         handleInput(e.code, true, e));
 
-    document.addEventListener('keyup', e =>
+    on(document, 'keyup', e =>
         handleInput(e.code, false, e));
 
     const controls = document.getElementById('controls');
 
-    controls.addEventListener('mousedown', e =>
+    on(controls, 'mousedown', e =>
         handleControl(true, e));
 
-    controls.addEventListener('touchstart', e =>
+    on(controls, 'touchstart', e =>
         handleControl(true, e));
 
-    controls.addEventListener('mouseup', e =>
+    on(controls, 'mouseup', e =>
         handleControl(false, e));
 
-    controls.addEventListener('touchend', e =>
+    on(controls, 'touchend', e =>
         handleControl(false, e));
 
     appendButton('#mapping-buttons', 'Reset to Default', resetMappings);
@@ -240,7 +240,7 @@ function pollGamepads() {
     }
 }
 
-window.addEventListener('gamepadconnected', e => {
+on(window, 'gamepadconnected', e => {
     if (e.gamepad.mapping !== 'standard') {
         console.warn('Non-standard gamepad attached. Mappings may be funny.');
     }
@@ -251,7 +251,7 @@ window.addEventListener('gamepadconnected', e => {
     }
 });
 
-window.addEventListener('gamepaddisconnected', e => {
+on(window, 'gamepaddisconnected', e => {
     gamepadStates[e.gamepad.index] = null;
 });
 
@@ -292,8 +292,8 @@ async function startMapKey(keyElement, action) {
         cancelCapture();
     };
 
-    document.body.addEventListener('mousedown', cancel, true);
-    document.body.addEventListener('touchstart', cancel, true);
+    on(document.body, 'mousedown', cancel, true);
+    on(document.body, 'touchstart', cancel, true);
     document.body.classList.add('capturing');
     keyElement.classList.add('mapping');
     try {
@@ -305,8 +305,8 @@ async function startMapKey(keyElement, action) {
     } finally {
         keyElement.classList.remove('mapping');
         document.body.classList.remove('capturing');
-        document.body.removeEventListener('touchstart', cancel, true);
-        document.body.removeEventListener('mousedown', cancel, true);
+        off(document.body, 'touchstart', cancel, true);
+        off(document.body, 'mousedown', cancel, true);
     }
 }
 

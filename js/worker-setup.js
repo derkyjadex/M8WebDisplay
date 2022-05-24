@@ -1,4 +1,4 @@
-// Copyright 2021 James Deery
+// Copyright 2021-2022 James Deery
 // Released under the MIT licence, https://opensource.org/licenses/MIT
 
 import { show, hide, on } from './util.js';
@@ -17,20 +17,19 @@ let reloadAction = () => {};
 on('#reload button', 'click', () => reloadAction());
 
 export async function setup() {
-    navigator.serviceWorker
-        .addEventListener('controllerchange', () => reload());
+    on(navigator.serviceWorker, 'controllerchange', () => reload());
 
     let firstInstall = !navigator.serviceWorker.controller;
 
     const reg = await navigator.serviceWorker.register('worker.js');
-    reg.addEventListener('updatefound', () => {
+    on(reg, 'updatefound', () => {
         if (firstInstall) {
             firstInstall = false;
             return;
         }
 
         const newWorker = reg.installing;
-        newWorker.addEventListener('statechange', () => {
+        on(newWorker, 'statechange', () => {
             if (newWorker.state === 'installed') {
                 if (navigator.serviceWorker.controller) {
                     reloadAction = () =>

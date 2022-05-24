@@ -1,4 +1,4 @@
-// Copyright 2021 James Deery
+// Copyright 2021-2022 James Deery
 // Released under the MIT licence, https://opensource.org/licenses/MIT
 
 export function show(query) {
@@ -39,7 +39,7 @@ export function appendButton(target, title, onClick) {
     return button;
 }
 
-export function on(target, eventType, action) {
+export function on(target, eventType, action, useCapture) {
     if (typeof target === 'string') {
         target = document.querySelectorAll(target);
     } else if (!(target instanceof Array)) {
@@ -47,6 +47,10 @@ export function on(target, eventType, action) {
     }
 
     for (const element of target) {
-        element.addEventListener(eventType, action);
+        element.addEventListener(eventType, action, useCapture);
     }
+}
+
+export function off(target, eventType, action, useCapture) {
+    target.removeEventListener(eventType, action, useCapture);
 }

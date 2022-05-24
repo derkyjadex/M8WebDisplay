@@ -1,7 +1,7 @@
 // Copyright 2021-2022 James Deery
 // Released under the MIT licence, https://opensource.org/licenses/MIT
 
-import { wait } from './util.js';
+import { wait, on } from './util.js';
 
 export class SerialConnection {
     _port;
@@ -14,7 +14,7 @@ export class SerialConnection {
         this._onConnectionChanged = onConnectionChanged;
         this._waitingForUserSelection = false;
 
-        navigator.serial.addEventListener('connect', e => {
+        on(navigator.serial, 'connect', e => {
             if (!this._waitingForUserSelection) {
                 this.connect().catch(() => {});
             }

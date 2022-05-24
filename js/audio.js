@@ -1,7 +1,7 @@
-// Copyright 2021 James Deery
+// Copyright 2021-2022 James Deery
 // Released under the MIT licence, https://opensource.org/licenses/MIT
 
-import { wait } from './util.js';
+import { wait, on, off } from './util.js';
 
 let ctx;
 let enabled = true;
@@ -77,11 +77,11 @@ function waitForUserGesture() {
     function resume() {
         ctx && ctx.resume();
         events.forEach(e =>
-            document.removeEventListener(e, resume));
+            off(document, e, resume));
     }
 
     events.forEach(e =>
-        document.addEventListener(e, resume));
+        on(document, e, resume));
 }
 
 export function enable() {
