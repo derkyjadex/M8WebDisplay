@@ -32,11 +32,11 @@ const parser = new Parser(renderer);
 let resizeCanvas = (function() {
     const display = document.getElementById('display');
     const canvas = document.getElementById('canvas');
-    const svg = document.querySelector('#canvas + svg');
 
     function resize() {
         const ratio = devicePixelRatio;
         const dW = display.clientWidth * ratio;
+        const svg = document.getElementById('screen');
 
         if (Settings.get('snapPixels') && dW <= 1600) {
             let dH = display.clientHeight * ratio;
