@@ -16,6 +16,14 @@ export class Renderer {
 
     _onBackgroundChanged;
 
+    _fontConfig = [
+        //glyph x, y, hoffset, voffset
+        [8,10,0,0],
+        [10,12,0,-40]
+    ];
+    
+    _fontId = 0;
+
     constructor(bg, onBackgroundChanged) {
         this._backgroundColour = `rgb(${bg[0]}, ${bg[1]}, ${bg[2]})`;
         this._onBackgroundChanged = onBackgroundChanged;
@@ -25,20 +33,56 @@ export class Renderer {
         this._buildText();
     }
 
+    setFont(f) {
+        if(this._fontId == f) return;
+        this._fontId = f;   
+        this._buildText();
+        this.clear();
+    }
+
     _buildText() {
         const xmlns = 'http://www.w3.org/2000/svg';
         const svg = document.createElementNS(xmlns, 'svg');
+        const canvas = document.getElementById('canvas');
         svg.setAttributeNS(null, 'viewBox', '0 0 640 480');
+        svg.setAttributeNS(null, 'id', 'screen');
+        svg.setAttributeNS(null, 'style', canvas.getAttribute('style'));
+
+        if(this._fontId == 1) {
+            svg.setAttributeNS(null, 'class', 'big');
+        }
 
         while (svg.firstChild) {
             svg.removeChild(svg.lastChild);
         }
 
-        for (let y = 0; y < 25; y++) {
+        var start = 0;
+        if(this._fontId == 1) { 
+            start = 3;
+        }
+
+        for (let y = start; y < 25; y++) {
             for (let x = 0; x < 39; x++) {
                 const e = document.createElementNS(xmlns, 'text');
-                e.setAttributeNS(null, 'x', x * 16);
-                e.setAttributeNS(null, 'y', y * 20 + 20);
+                const x_offset = x * (this._fontConfig[this._fontId][0] * 2);
+
+                var y_offset = 0;
+                if(this._fontId == 1) {
+                    y_offset = ((y - 3) * (this._fontConfig[this._fontId][1] * 2))+(this._fontConfig[this._fontId][1] * 2) - 16;
+                    if(y == 3) {
+                        y_offset += 20;
+                    }
+                } else {
+                    y_offset = (y * (this._fontConfig[this._fontId][1] * 2))+(this._fontConfig[this._fontId][1] * 2);
+                }
+
+                
+                if(this._fontId == 1) {
+                    y_offset += 10;
+                }
+            
+                e.setAttributeNS(null, 'x', x_offset);
+                e.setAttributeNS(null, 'y', y_offset);
                 e.setAttributeNS(null, 'fill', '_000');
                 const t = document.createTextNode('');
                 e.appendChild(t);
@@ -51,7 +95,9 @@ export class Renderer {
                 };
             }
         }
-
+        if (document.contains(document.getElementById('screen'))) {
+            document.getElementById('screen').remove();
+        }
         this._canvas.insertAdjacentElement('afterend', svg);
     }
 
@@ -70,6 +116,7 @@ export class Renderer {
             if (this._waveOn) {
                 this._ctx.fillStyle = this._waveColour;
                 for (let i = 0; i < this._waveData.length; i++) {
+                    if(this._waveData[i] == 255) continue;
                     const y = Math.min(this._waveData[i], 20);
                     this._ctx.fillRect(i, y, 1, 1);
                 }
@@ -102,18 +149,20 @@ export class Renderer {
 
     drawRect(x, y, w, h, r, g, b) {
         const colour = `rgb(${r}, ${g}, ${b})`
-        if (x === 0 && y === 0 && w === 320 && h === 240) {
+        if (x === 0 && y === 0 && w === 320 && h >= 240) {
             this._rects.length = 0;
             this._backgroundColour = colour;
             this._onBackgroundChanged(r, g, b);
         }
-
+        if(this._fontId == 1) {
+            y += (this._fontConfig[this._fontId][3]);
+        }
         this._rects.push({ colour, x, y, w, h });
         this._queueFrame();
     }
 
     drawText(c, x, y, r, g, b) {
-        const i = Math.floor(y / 10) * 39 + Math.floor(x / 8);
+        const i = Math.floor(y / this._fontConfig[this._fontId][1]) * 39 + Math.floor(x / this._fontConfig[this._fontId][0]);
         if (this._textNodes[i]) {
             this._textUpdates[i] = {
                 node: this._textNodes[i],
@@ -127,8 +176,9 @@ export class Renderer {
     drawWave(r, g, b, data) {
         this._waveColour = `rgb(${r}, ${g}, ${b})`
 
-        if (data.length == 320) {
-            this._waveData.set(data);
+        if (data.length != 0) {
+            this._waveData.fill(-1);
+            this._waveData.set(data, 320-data.length);
             this._waveOn = true;
             this._waveUpdated = true;
             this._queueFrame();

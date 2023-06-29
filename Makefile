@@ -17,7 +17,7 @@ DEPLOY_DIR = deploy/
 NPM = node_modules/
 
 ifeq ($(shell uname -s),Darwin)
-	BASE64 = base64
+	BASE64 = base64 -i
 	MD5 = md5
 else
 	BASE64 = base64 -w0
@@ -27,7 +27,7 @@ endif
 
 index.html: build/index.css js/main.js
 
-js/main.js: $(filter-out js/main.js,$(wildcard js/*.js)) build/shaders.js build/font.js
+js/main.js: $(filter-out js/main.js,$(wildcard js/*.js)) build/shaders.js build/font1.js build/font2.js
 	@touch $@
 
 build/shaders.js: $(wildcard shaders/*.vert) $(wildcard shaders/*.frag)
@@ -40,10 +40,15 @@ build/shaders.js: $(wildcard shaders/*.vert) $(wildcard shaders/*.frag)
 	  echo "\`;"; \
 	done > $@
 
-build/font.js: font.png
+build/font1.js: font1.png
 	@echo Building $@
 	@mkdir -p $(@D)
-	@printf "export const font = 'data:image/png;base64,$$($(BASE64) $^)';" > $@
+	@printf "export const font1 = 'data:image/png;base64,$$($(BASE64) $^)';" > $@
+
+build/font2.js: font2.png
+	@echo Building $@
+	@mkdir -p $(@D)
+	@printf "export const font2 = 'data:image/png;base64,$$($(BASE64) $^)';" > $@
 
 build/main.js: js/main.js $(NPM)
 	@echo Building $@
@@ -57,14 +62,25 @@ build/worker.js: js/worker.js $(CACHE_FILES) $(NPM)
 	@sed "s/INDEXHASH/$$(cat $(CACHE_FILES) | $(MD5))/" $< \
 	  | npx terser --mangle --compress > $@
 
-css/index.scss: $(filter-out css/index.scss,$(wildcard css/*.scss)) build/font.scss
+css/index.scss: $(filter-out css/index.scss,$(wildcard css/*.scss)) build/font1.scss
 	@touch $@
 
-build/font.scss: m8stealth57.woff2
+css/index.scss: $(filter-out css/index.scss,$(wildcard css/*.scss)) build/font2.scss
+	@touch $@
+
+build/font1.scss: m8stealth57.woff2
 	@echo Building $@
 	@mkdir -p $(@D)
 	@printf "@font-face {\n\
 	    font-family: 'm8stealth57';\n\
+	    src: url('data:font/woff2;base64,$$($(BASE64) $^)') format('woff2');\n\
+	}" > $@
+
+build/font2.scss: m8stealth89.woff2
+	@echo Building $@
+	@mkdir -p $(@D)
+	@printf "@font-face {\n\
+	    font-family: 'm8stealth89';\n\
 	    src: url('data:font/woff2;base64,$$($(BASE64) $^)') format('woff2');\n\
 	}" > $@
 

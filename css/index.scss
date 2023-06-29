@@ -2,7 +2,8 @@
 // Released under the MIT licence, https://opensource.org/licenses/MIT
 
 @use 'common' as *;
-@use '../build/font';
+@use '../build/font1';
+@use '../build/font2';
 
 body {
     font-family: sans-serif;

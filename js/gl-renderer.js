@@ -2,7 +2,8 @@
 // Released under the MIT licence, https://opensource.org/licenses/MIT
 
 import * as Shaders from '../build/shaders.js';
-import { font } from '../build/font.js';
+import { font1 } from '../build/font1.js';
+import { font2 } from '../build/font2.js';
 
 const MAX_RECTS = 1024;
 
@@ -11,8 +12,14 @@ export class Renderer {
     _gl;
     _bg = [0, 0, 0];
     _frameQueued = false;
-
     _onBackgroundChanged;
+
+    _fontConfig = [
+        //glyph x, y, hoffset, voffset
+        [8,10,0,0],
+        [10,12,0,-40]
+    ];
+    _fontId = 0;
 
     constructor(bg, onBackgroundChanged) {
         this._bg = [bg[0] / 255, bg[1] / 255, bg[2] / 255];
@@ -32,9 +39,16 @@ export class Renderer {
 
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-        gl.viewport(0, 0, 320, 240);
+        gl.viewport(0,0, 320, 240);
 
         this._queueFrame();
+    }
+
+    setFont(f) {
+        if(this._fontId == f) return;
+        this._fontId = f;
+        const gl = this._gl;
+        this._setupText(gl);
     }
 
     _rectShader;
@@ -120,7 +134,7 @@ export class Renderer {
         } else if (this._rectCount < MAX_RECTS) {
             const i = this._rectCount;
             this._rectShapes[i * 6 + 0] = x;
-            this._rectShapes[i * 6 + 1] = y;
+            this._rectShapes[i * 6 + 1] = y ? y+this._fontConfig[this._fontId][3] : y;
             this._rectShapes[i * 6 + 2] = w;
             this._rectShapes[i * 6 + 3] = h;
             this._rectColours[i * 12 + 0] = r;
@@ -143,7 +157,12 @@ export class Renderer {
     _textChars = new Uint8Array(40 * 24);
 
     _setupText(gl) {
-        this._textShader = buildProgram(gl, 'text');
+        
+        if(this._fontId == 0) {
+            this._textShader = buildProgram(gl, 'text1');
+        } else {
+            this._textShader = buildProgram(gl, 'text2');
+        }
         gl.useProgram(this._textShader);
         gl.uniform1i(gl.getUniformLocation(this._textShader, 'font'), 1);
 
@@ -167,20 +186,34 @@ export class Renderer {
         this._textTex = gl.createTexture();
         gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, this._textTex);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 470, 7, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
-        const fontImage = new Image();
-        fontImage.onload = () => {
-            gl.activeTexture(gl.TEXTURE1);
-            gl.bindTexture(gl.TEXTURE_2D, this._textTex);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 470, 7, 0, gl.RGBA, gl.UNSIGNED_BYTE, fontImage);
-            this._queueFrame();
+        if(this._fontId == 0) {
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 470, 7, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            const fontImage1 = new Image();
+            fontImage1.onload = () => {
+                gl.activeTexture(gl.TEXTURE1);
+                gl.bindTexture(gl.TEXTURE_2D, this._textTex);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 470, 7, 0, gl.RGBA, gl.UNSIGNED_BYTE, fontImage1);
+                this._queueFrame();
+            }
+            fontImage1.src = font1;
+        } else {
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 752, 9, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            const fontImage2 = new Image();
+            fontImage2.onload = () => {
+                gl.activeTexture(gl.TEXTURE1);
+                gl.bindTexture(gl.TEXTURE_2D, this._textTex);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 752, 9, 0, gl.RGBA, gl.UNSIGNED_BYTE, fontImage2);
+                this._queueFrame();
+            }
+            fontImage2.src = font2;
         }
-        fontImage.src = font;
+        
     }
 
     _renderText(gl) {
@@ -203,7 +236,8 @@ export class Renderer {
     }
 
     drawText(c, x, y, r, g, b) {
-        const i = Math.floor(y / 10) * 40 + Math.floor(x / 8);
+        const i = Math.floor(y / this._fontConfig[this._fontId][1]) * 40 + Math.floor(x / this._fontConfig[this._fontId][0]);
+        if(i >= 960) return;
         this._textChars[i] = c - 32;
         this._textChars.updated = true;
         this._textColours[i * 3 + 0] = r;
@@ -213,7 +247,7 @@ export class Renderer {
 
         this._queueFrame();
     }
-        
+    
     _waveData = new Uint8Array(320);
     _waveColour = new Float32Array([0.5, 1, 1]);
     _waveOn = false;
@@ -251,9 +285,10 @@ export class Renderer {
         this._waveColour[0] = r / 255;
         this._waveColour[1] = g / 255;
         this._waveColour[2] = b / 255;
-
-        if (data.length == 320) {
-            this._waveData.set(data);
+        
+        if (data.length != 0) {
+            this._waveData.fill(-1);
+            this._waveData.set(data, 320-data.length);
             this._waveData.updated = true;
             this._waveOn = true;
             this._queueFrame();
