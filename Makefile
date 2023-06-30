@@ -89,7 +89,8 @@ build/index.css: css/index.scss $(NPM)
 build/index.html: index.html build/index.css build/main.js favicon.png $(NPM)
 	@echo Building $@
 	@mkdir -p $(@D)
-	@sed -e 's/"build\/index.css"/"index.css"/' $< \
+	@sed "s/BUILDNUM/$$(date -u +"%Y-%m-%dT%H:%M:%S") $$(git rev-parse --short HEAD)$$(test -z "$$(git status --porcelain)" || printf X)/" $< \
+	 | sed -e 's/"build\/index.css"/"index.css"/' \
 	 | sed -e 's/"js\/main.js"/"main.js"/' \
 	 | sed -e 's|"favicon.png"|"data:image/png;base64,'$$($(BASE64) favicon.png)'"|' \
 	 | sed -e 's/^ *//' \
