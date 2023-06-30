@@ -62,10 +62,7 @@ build/worker.js: js/worker.js $(CACHE_FILES) $(NPM)
 	@sed "s/INDEXHASH/$$(cat $(CACHE_FILES) | $(MD5))/" $< \
 	  | npx terser --mangle --compress > $@
 
-css/index.scss: $(filter-out css/index.scss,$(wildcard css/*.scss)) build/font1.scss
-	@touch $@
-
-css/index.scss: $(filter-out css/index.scss,$(wildcard css/*.scss)) build/font2.scss
+css/index.scss: $(filter-out css/index.scss,$(wildcard css/*.scss)) build/font1.scss build/font2.scss
 	@touch $@
 
 build/font1.scss: m8stealth57.woff2
