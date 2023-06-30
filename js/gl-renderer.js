@@ -124,7 +124,7 @@ export class Renderer {
     }
 
     drawRect(x, y, w, h, r, g, b) {
-        if (x === 0 && y === 0 && w === 320 && h === 240) {
+        if (x === 0 && y === 0 && w >= 320 && h >= 240) {
             this._onBackgroundChanged(r, g, b);
 
             this._bg = [r / 255, g / 255, b / 255];

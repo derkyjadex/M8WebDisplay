@@ -149,7 +149,7 @@ export class Renderer {
 
     drawRect(x, y, w, h, r, g, b) {
         const colour = `rgb(${r}, ${g}, ${b})`
-        if (x === 0 && y === 0 && w === 320 && h >= 240) {
+        if (x === 0 && y === 0 && w >= 320 && h >= 240) {
             this._rects.length = 0;
             this._backgroundColour = colour;
             this._onBackgroundChanged(r, g, b);
