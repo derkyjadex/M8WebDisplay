@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "juice": "^7.0.0",
-    "local-web-server": "^4.2.1",
+    "local-web-server": "^5.3.0",
     "rollup": "^2.38.1",
     "sass": "^1.32.5",
     "terser": "^5.5.1"
