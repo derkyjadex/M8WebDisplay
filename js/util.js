@@ -31,7 +31,9 @@ export function appendButton(target, title, onClick) {
     on(button, 'click', onClick);
 
     if (typeof target === 'string') {
+
         target = document.querySelector(target)
+
     }
 
     target.append(button);

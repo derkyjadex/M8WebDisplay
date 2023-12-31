@@ -100,6 +100,20 @@ function setupButton(setting, title) {
 }
 
 export function load(setting, defaultValue) {
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.has(setting)) {
+      const urlValue = urlParams.get(setting)
+      if (typeof defaultValue == 'boolean') {
+        defaultValue = JSON.parse(urlValue) // parse true/false
+      } else if (setting == 'inputMap') {
+        defaultValue = {
+          ...defaultValue,
+          ...JSON.parse(urlValue)
+        }
+      } else {
+        defaultValue = urlParams.get(setting)
+      }
+    }
     let value = localStorage[setting];
     value = value === undefined ? defaultValue : JSON.parse(value);
     values[setting] = value;
@@ -121,5 +135,9 @@ export function onChange(setting, action) {
 }
 
 export function get(setting) {
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.has(setting)) {
+      return urlParams.get(setting)
+    }
     return values[setting];
 }
