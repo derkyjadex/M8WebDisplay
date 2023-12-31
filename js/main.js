@@ -157,6 +157,12 @@ function setupConnection(connection, errorMessage) {
                 hide('#info');
                 show(errorMessage);
             }));
+    
+    if (Settings.load('skipInfo', false)) {
+      setTimeout(() => {
+        document.querySelector('#connect').click()
+      }, 2000)
+    }
 
     on(window, 'beforeunload', e =>
         connection.disconnect());
