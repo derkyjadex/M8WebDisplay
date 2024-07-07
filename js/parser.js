@@ -12,6 +12,9 @@ export class Parser {
     _buffer = new Uint8Array(512);
     _i = 0;
     _renderer;
+    _r = 0; // Variable length rect packets requires storing the last colour used
+    _g = 0;
+    _b = 0;
 
     constructor(renderer) {
         this._renderer = renderer;
@@ -20,16 +23,43 @@ export class Parser {
     _processFrame(frame) {
         switch (frame[0]) {
             case 0xfe:
-                if (frame.length === 12) {
+                // Packets can be missing size and/or colour info.
+                // If colour is missing use the last rect colour values.
+                if (frame.length >= 5 && frame.length <= 12) {
+                   let w = 1;
+                   let h = 1;
+                    switch(frame.length) {
+                        case 5: // No Size, no colour
+                            break;
+                        case 8: // No size, colour
+                            this._r = frame[9];
+                            this._g = frame[10];
+                            this._b = frame[11];
+                            break;
+                        case 9: // Size, no colour
+                            w = frame[5] + frame[6] * 256;
+                            h = frame[7] + frame[8] * 256;
+                            break;
+                        case 12: // Size, colour
+                            w = frame[5] + frame[6] * 256;
+                            h = frame[7] + frame[8] * 256;
+                            this._r = frame[9];
+                            this._g = frame[10];
+                            this._b = frame[11];
+                            break;
+                        default:
+                            console.log('Bad RECT frame');
+                            return;
+                    }
                     this._renderer.drawRect(
                         frame[1] + frame[2] * 256,
                         frame[3] + frame[4] * 256,
-                        frame[5] + frame[6] * 256,
-                        frame[7] + frame[8] * 256,
-                        frame[9],
-                        frame[10],
-                        frame[11]);
-
+                        w,
+                        h,
+                        this._r,
+                        this._g,
+                        this._b)
+                    break;
                 } else {
                     console.log('Bad RECT frame');
                 }
