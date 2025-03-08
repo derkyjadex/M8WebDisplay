@@ -29,7 +29,7 @@ The web display uses the Web Serial API to communicate with the M8. This API is 
 
 1. On Ubuntu and Debian systems (and perhaps others) users do not have permission to access the M8's serial port by default. You will need to add yourself to the `dialout` group and restart your login session/reboot. After this you should be able to connect normally.
 2. Newer Samsung phones appear to handle USB serial in a way that prevents Chrome from being able to open the device. There is an [outstanding Chromium bug](https://bugs.chromium.org/p/chromium/issues/detail?id=1099521#c21) to fix this.
-3. The way that that Android handles USB audio devices (such as the M8) prevents us from being able to redirect the audio to the phone's speakers or headphone output. When the M8 is attached, Android appears to completely disable the internal audio interface and uses the M8 for all audio input and output instead. So the page is able to receive the audio from the M8 but it does not have anywhere to redirect it to other than the M8 itself.
+3. The way that Android handles USB audio devices (such as the M8) prevents us from being able to redirect the audio to the phone's speakers or headphone output. When the M8 is attached, Android appears to completely disable the internal audio interface and uses the M8 for all audio input and output instead. So the page is able to receive the audio from the M8 but it does not have anywhere to redirect it to other than the M8 itself.
 
 ## Developing
 
